@@ -50,7 +50,8 @@ tippen **„Bei allen dabei“** und nehmen nur die Ausnahmen raus – fertig in
 - [x] Subdomain `team.bretten-kangaroos.net` (A-Record bei IONOS → Vercel, 2026-10-31)
 - [x] Trainer-Ansicht (Übersicht mit Matrix, Termin mit Listen + Hinweis + WhatsApp-Text) + Admin-API für Claude
 - [x] Mailversand (IONOS-SMTP, Absender teamplaner@bretten-kangaroos.net) – live seit 2026-10-31
-- [ ] Erinnerungs-Mails, Web Push (Hinweis-Benachrichtigung, späte Änderungen an Trainer)
+- [x] Erinnerungs-Mails mit Antwort-Knöpfen (Cron täglich, Admin-API) – Cron erst aktiv mit `CRON_SECRET`
+- [ ] Web Push (Hinweis-Benachrichtigung, späte Änderungen an Trainer); Erinnerungsplan im Trainerbereich
 - [x] Eltern: Abwesenheit (mit Ferien-Schnellauswahl), Ferienfrage, Kalender-Abo
 - [x] Eltern + Trainer: „Link verloren?“ (`/link`)
 

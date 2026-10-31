@@ -1,0 +1,91 @@
+---
+// A Dabei / Nicht dabei button from the reminder mail (lib/answer-link.ts). Opening the link saves
+// nothing: mail scanners open links in advance. The page sends the answer itself (POST, by
+// script); without JavaScript the parent taps "Bestätigen".
+import { LINK_KEY } from 'astro:env/server';
+import Base from '../../layouts/Base.astro';
+import { readAnswerToken } from '../../lib/answer-link.ts';
+import { getDb } from '../../lib/db/index.ts';
+import { shortDate, weekday } from '../../lib/format.ts';
+import { setResponses } from '../../lib/season.ts';
+
+const db = await getDb();
+const target = await readAnswerToken(db, Astro.params.token ?? '', LINK_KEY);
+
+let state: 'invalid' | 'confirm' | 'saved' | 'closed' = 'invalid';
+if (target) {
+  state = target.current === target.status ? 'saved' : 'confirm';
+  if (Astro.request.method === 'POST' && state === 'confirm') {
+    const saved = await setResponses(
+      db,
+      target.guardianId,
+      target.playerId,
+      [target.eventId],
+      target.status,
+    );
+    state = saved.length > 0 ? 'saved' : 'closed';
+  }
+}
+const when = target && `am ${weekday(target.startsAt)} ${shortDate(target.startsAt)}`;
+const answer = target?.status === 'in' ? 'dabei' : 'nicht dabei';
+---
+
+<Base title="Antwort · Bretten Kangaroos">
+  <div class="flex flex-col gap-3 bg-chalk px-4 py-7">
+    <p class="label">Teamplaner</p>
+    {state === 'invalid' && (
+      <>
+        <h1 class="heading text-4xl leading-tight">Link ungültig</h1>
+        <p>Dieser Knopf funktioniert nicht (mehr). Bitte antworte über deinen persönlichen Link.</p>
+        <p>
+          <a href="/link">Link verloren? Hier neu anfordern</a>
+        </p>
+      </>
+    )}
+    {target && state === 'confirm' && (
+      <>
+        <h1 class="heading text-4xl leading-tight">{target.title}</h1>
+        <p>
+          {target.firstName} ist {when} <strong>{answer}</strong>?
+        </p>
+        <form method="post" id="answer">
+          <button
+            type="submit"
+            class:list={[
+              'min-h-13 w-full rounded font-condensed text-xl font-semibold tracking-[0.04em] uppercase',
+              target.status === 'in'
+                ? 'bg-jersey text-white'
+                : 'border-2 border-pill bg-white text-ink',
+            ]}
+          >
+            Bestätigen: {answer}
+          </button>
+        </form>
+        <script is:inline>
+          document.getElementById('answer').requestSubmit();
+        </script>
+      </>
+    )}
+    {target && state === 'saved' && (
+      <>
+        <h1 class="heading text-4xl leading-tight">Danke!</h1>
+        <p role="status">
+          {target.firstName} ist {when} ({target.title}) <strong>{answer}</strong>.
+        </p>
+      </>
+    )}
+    {target && state === 'closed' && (
+      <>
+        <h1 class="heading text-4xl leading-tight">Nicht mehr möglich</h1>
+        <p>
+          {target.title} {when} ist schon vorbei oder abgesagt.
+        </p>
+      </>
+    )}
+    {target && (
+      <p>
+        <a href="/">Alle Termine ansehen</a>
+      </p>
+    )}
+  </div>
+</Base>

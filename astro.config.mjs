@@ -6,6 +6,8 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
+  // Production address: links in mails sent by the cron (no request to take the address from)
+  site: 'https://team.bretten-kangaroos.net',
   output: 'server',
   adapter: vercel(),
   // Islands only, like the rezepte app
@@ -47,6 +49,8 @@ export default defineConfig({
       SMTP_PASS: envField.string({ context: 'server', access: 'secret', optional: true }),
       // e.g. "Bretten Kangaroos <teamplaner@bretten-kangaroos.net>"; default: SMTP_USER
       MAIL_FROM: envField.string({ context: 'server', access: 'secret', optional: true }),
+      // Vercel sends it to the cron endpoint (/api/cron/reminders); without it the cron does nothing
+      CRON_SECRET: envField.string({ context: 'server', access: 'secret', optional: true }),
     },
   },
 });

@@ -58,7 +58,7 @@ Für Spiele dagegen **ausdrückliche** Zusage zu Saisonbeginn (keine Antwort = o
 - [ ] Termin: Typ, Datum, Treffpunkt + Uhrzeit, Beginn, Ort (Maps-Link), Gegner, Heim/Auswärts
 - [ ] Übersicht pro Termin: dabei / nicht dabei / offen, mit Ampel (Mindestzahl)
 - [ ] Saison-Matrix: Kinder × Termine
-- [ ] Erinnerung an die Offenen
+- [ ] Erinnerung an die Offenen (automatisch per Mail und über Claude erledigt; Knopf im Trainerbereich fehlt)
 - [ ] Hinweis am Termin (für alle sichtbar, Push an die Zugesagten)
 - [ ] Sehen, welche Familien keine Push-Benachrichtigungen aktiviert haben
 - [ ] „In WhatsApp teilen“ mit fertigem Text + Link (Saisonstart, Erinnerung, Hinweis)
@@ -71,7 +71,7 @@ Für Spiele dagegen **ausdrückliche** Zusage zu Saisonbeginn (keine Antwort = o
 - [ ] Saisonansicht aller eigenen Kinder, „Bei allen dabei“, Ausnahmen, Abwesenheitszeitraum
 - [ ] Bei jedem Spiel: Teamzahl („Noch 2 Zusagen bis 9“) und Stichtag
 - [x] Schulferien-Frage („Seid ihr in den Pfingstferien weg?“), Ferien als Schnellauswahl bei Abwesenheit
-- [ ] Antworten direkt aus der Erinnerungs-Mail
+- [x] Antworten direkt aus der Erinnerungs-Mail (`/antwort/<token>`)
 - [x] „Link verloren?“ – Link per E-Mail noch einmal anfordern (`/link`)
 - [x] Kalender-Abo (iCal) mit den Terminen der eigenen Kinder (nur die, bei denen sie dabei sind)
 - [ ] Web Push aktivieren; dauerhafter Hinweis „Zum Home-Bildschirm“, solange die Seite im Browser offen ist, sonst E-Mail

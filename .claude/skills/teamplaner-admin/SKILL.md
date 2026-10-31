@@ -26,18 +26,19 @@ Tokens und Links **nie** in Commits, Docs oder Logs schreiben. Persönliche Link
 
 ## Endpunkte
 
-| Methode + Pfad                       | Body / Query                                                                                            | Ergebnis                                                                       |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `GET /teams`                         | –                                                                                                       | Teams mit Kindern (`name` = Vorname + Initial), Eltern, Trainern, IDs          |
-| `POST /teams`                        | `{ name, season }`                                                                                      | `{ id }`                                                                       |
-| `GET /events?team=<id>[&from=<ISO>]` | –                                                                                                       | kommende Termine mit `counts {in,out,open}`, Namen `out`/`open`, `lateChanges` |
-| `POST /events`                       | `{ teamId, events: [Event…] }` (max. 200)                                                               | `{ created: [ids] }`                                                           |
-| `PATCH /events/<id>`                 | Teil eines Events                                                                                       | `{ updated }`                                                                  |
-| `PUT /responses`                     | `{ eventId, playerId, status: "in" \| "out" \| null }`                                                  | Antwort setzen (null = wieder offen)                                           |
-| `POST /families`                     | `{ name, email, phone?, players: [{ firstName, lastNameInitial, birthYear, teamId } \| { playerId }] }` | `{ guardianId, playerIds, link }`                                              |
-| `POST /guardians/<id>/token`         | –                                                                                                       | neuer Eltern-Link, alter ungültig                                              |
-| `POST /coaches`                      | `{ name, email, isAdmin?, teamIds }`                                                                    | `{ coachId, link }` (Link zum Trainerbereich)                                  |
-| `POST /coaches/<id>/token`           | –                                                                                                       | neuer Trainer-Link                                                             |
+| Methode + Pfad                       | Body / Query                                                                                            | Ergebnis                                                                              |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `GET /teams`                         | –                                                                                                       | Teams mit Kindern (`name` = Vorname + Initial), Eltern, Trainern, IDs                 |
+| `POST /teams`                        | `{ name, season }`                                                                                      | `{ id }`                                                                              |
+| `GET /events?team=<id>[&from=<ISO>]` | –                                                                                                       | kommende Termine mit `counts {in,out,open}`, Namen `out`/`open`, `lateChanges`        |
+| `POST /events`                       | `{ teamId, events: [Event…] }` (max. 200)                                                               | `{ created: [ids] }`                                                                  |
+| `PATCH /events/<id>`                 | Teil eines Events                                                                                       | `{ updated }`                                                                         |
+| `PUT /responses`                     | `{ eventId, playerId, status: "in" \| "out" \| null }`                                                  | Antwort setzen (null = wieder offen)                                                  |
+| `POST /families`                     | `{ name, email, phone?, players: [{ firstName, lastNameInitial, birthYear, teamId } \| { playerId }] }` | `{ guardianId, playerIds, link }`                                                     |
+| `POST /guardians/<id>/token`         | –                                                                                                       | neuer Eltern-Link, alter ungültig                                                     |
+| `POST /coaches`                      | `{ name, email, isAdmin?, teamIds }`                                                                    | `{ coachId, link }` (Link zum Trainerbereich)                                         |
+| `POST /coaches/<id>/token`           | –                                                                                                       | neuer Trainer-Link                                                                    |
+| `POST /reminders`                    | `{ teamId?, mode?: "all" \| "due", dryRun? }`                                                           | Erinnerungs-Mails an Familien mit offenen Spielen; `dryRun` zeigt nur, wer sie bekäme |
 
 **Event-Felder:** `type` (`game` \| `training` \| `tournament` \| `other`), `title` („vs. Heidelberg“ /
 „bei Mannheim“ / „Training“), `opponent`, `homeAway` (`home` \| `away`), `seriesId` (UUID, gleiche für
@@ -46,6 +47,10 @@ eine Trainingsserie), `bsmMatchId`, `meetAt`, `startsAt`, `endsAt`, `respondBy` 
 Zeiten als ISO mit Offset, deutsche Zeit: Sommer `+02:00`, Winter `+01:00`.
 
 Fehler: 401 = Token falsch, 400 = `issues` (zod) zeigen das falsche Feld, 404 = ID unbekannt.
+
+Erinnerungen: Der Cron schickt sie automatisch 7 Tage und 1 Tag vor dem Stichtag. Zum Saisonstart (ca. 3 Tage
+nach dem Versand der Links) oder auf Wunsch: erst `dryRun: true`, Martin die Liste zeigen, nach OK ohne
+`dryRun` senden. Höchstens eine Erinnerung pro Elternteil und Tag.
 
 Link verloren? Nicht erneuern, sondern auf `https://team.bretten-kangaroos.net/link` verweisen – dort kommt
 derselbe Link per Mail. Erneuern nur, wenn ein Link weitergegeben wurde (der alte hört dann auf zu gehen).

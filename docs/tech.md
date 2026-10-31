@@ -86,10 +86,17 @@ Web Push – was es braucht:
 
 ## Automatische Erinnerungen
 
-- Vercel Cron, täglich (z. B. 17 Uhr deutscher Zeit; Hobby-Crons laufen nur ungefähr pünktlich).
-- Plan: 3 Tage nach dem Saison-Link, 7 Tage und 1 Tag vor dem Stichtag. Nur an Familien mit offenen
-  Spielen, per Push, sonst Mail. Keine Reaktion → nächste Erinnerung (auch) an den anderen Elternteil.
-- Cron-Endpunkt mit `CRON_SECRET` absichern.
+- Vercel Cron, täglich 15 Uhr UTC (16/17 Uhr deutscher Zeit; Hobby-Crons laufen nur ungefähr pünktlich):
+  `/api/cron/reminders`, abgesichert mit `CRON_SECRET` – **ohne die Variable verschickt der Cron nichts**.
+- Plan: 7 Tage und 1 Tag vor dem Stichtag (ohne Stichtag: vor dem Spieltag) – für Kinder mit einem offenen
+  Spiel, das dann fällig ist. Die Mail listet alle offenen Spiele des Kindes.
+- „3 Tage nach dem Saison-Link“ gibt es nicht automatisch (die App weiß nicht, wann die Links verschickt
+  wurden): Claude schickt sie über die Admin-API (`POST /reminders`, Modus `all` = alle mit offenen Spielen).
+- Erste Erinnerung zu einem Kind an einen Elternteil, jede weitere an alle Eltern des Kindes. Höchstens
+  eine Erinnerung pro Elternteil und Tag. Protokoll in `reminder_mail`.
+- Vorerst nur Mail; Push folgt mit Web Push.
+- Antwort-Knöpfe: `/antwort/<token>`, signiert (HMAC mit `LINK_KEY` über Eltern, Kind, Spiel, Antwort und
+  den aktuellen persönlichen Link) statt gespeichert – ein erneuerter Link macht alte Knöpfe ungültig.
 
 ## Spielplan aus dem BSM
 

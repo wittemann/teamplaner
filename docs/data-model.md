@@ -17,7 +17,7 @@ Team ──< TeamMember >── Player ──< Guardianship >── Family/Guard
 
 **Guardian** (Elternteil) – id, name, email, phone? (optional, nur für den persönlichen WhatsApp-Anstoß), access_token_hash (SHA-256 des Tokens im persönlichen Link, rotierbar), access_token_sealed? (derselbe Link verschlüsselt, für „Link verloren?“), link_mailed_at?
 
-**Reminder** (Erinnerungsplan) – id, team_id, kind (season_start | before_deadline_7 | before_deadline_1 | manual), planned_at, sent_at?, recipients[] (guardian_id + Kanal push|mail)
+**ReminderMail** (verschickte Erinnerung) – id, guardian_id, kind (due = vor einem Stichtag | manual = über die Admin-API), player_ids[], event_ids[], sent_at. Geplant wird nicht gespeichert, sondern jeden Tag neu berechnet (`src/lib/reminders.ts`).
 → Cronjob verschickt fällige Erinnerungen nur an Familien mit offenen Spielen; hat ein Elternteil auf die letzte nicht reagiert, geht die nächste an den anderen Elternteil.
 
 **Holiday** (Schulferien BW) – name, from, to → keine Tabelle, `src/data/holidays-bw.json`, einmal pro Schuljahr gepflegt (amtlicher Ferienkalender BW)
