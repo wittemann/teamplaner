@@ -70,10 +70,10 @@ Für Spiele dagegen **ausdrückliche** Zusage zu Saisonbeginn (keine Antwort = o
 - [ ] Persönlicher Link, kein Login
 - [ ] Saisonansicht aller eigenen Kinder, „Bei allen dabei“, Ausnahmen, Abwesenheitszeitraum
 - [ ] Bei jedem Spiel: Teamzahl („Noch 2 Zusagen bis 9“) und Stichtag
-- [ ] Schulferien-Frage („Seid ihr in den Pfingstferien weg?“), Ferien als Schnellauswahl bei Abwesenheit
+- [x] Schulferien-Frage („Seid ihr in den Pfingstferien weg?“), Ferien als Schnellauswahl bei Abwesenheit
 - [ ] Antworten direkt aus der Erinnerungs-Mail
 - [ ] „Link verloren?“ – neuen Link per E-Mail anfordern
-- [ ] Kalender-Abo (iCal) mit den Terminen der eigenen Kinder (nur die, bei denen sie dabei sind)
+- [x] Kalender-Abo (iCal) mit den Terminen der eigenen Kinder (nur die, bei denen sie dabei sind)
 - [ ] Web Push aktivieren; dauerhafter Hinweis „Zum Home-Bildschirm“, solange die Seite im Browser offen ist, sonst E-Mail
 
 ### Claude

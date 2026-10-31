@@ -50,7 +50,8 @@ tippen **„Bei allen dabei“** und nehmen nur die Ausnahmen raus – fertig in
 - [ ] Subdomain `team.bretten-kangaroos.net` – erst zum Start
 - [x] Trainer-Ansicht (Übersicht mit Matrix, Termin mit Listen + Hinweis + WhatsApp-Text) + Admin-API für Claude
 - [ ] Mail + Web Push (Erinnerungen, Hinweis-Benachrichtigung, späte Änderungen an Trainer)
-- [ ] Eltern: Abwesenheit, Ferienfrage, Kalender-Abo, „Link verloren?“
+- [x] Eltern: Abwesenheit (mit Ferien-Schnellauswahl), Ferienfrage, Kalender-Abo
+- [ ] Eltern: „Link verloren?“
 
 ## Entwicklung
 

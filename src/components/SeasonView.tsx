@@ -1,16 +1,26 @@
 // The season of a family on one page (mockup: Main.dc.html, Eltern-Training.dc.html):
 // one tab per child, games with Dabei / Nicht dabei, "Bei allen offenen Spielen dabei" and the
 // trainings (in by default, parents only opt out). Taps show at once; if saving fails, the
-// answer goes back and a message says so.
+// answer goes back and a message says so. Below: absences and the question about the next
+// school holidays (components/Absences.tsx).
 import { actions } from 'astro:actions';
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
+import type { Absence, ChangedAnswer } from '../lib/absence.ts';
+import { changesByPlayer, holidayQuestions, type Holiday } from '../lib/absence-state.ts';
 import { dayOfMonth, deadline, month, shortDate, time, weekday } from '../lib/format.ts';
 import type { SeasonChild, SeasonEvent, Status } from '../lib/season.ts';
 import { applyStatus, currentStatuses, isOpen, openGames } from '../lib/season-state.ts';
+import { AbsenceSection, HolidayQuestion, type NewAbsence } from './Absences.tsx';
 
 type Props = {
   guardianName: string;
   initialChildren: SeasonChild[];
+  initialAbsences: Absence[];
+  holidays: Holiday[];
+  /** YYYY-MM-DD in Berlin */
+  today: string;
+  /** https URL of the family's calendar (lib/calendar.ts) */
+  calendarUrl?: string;
 };
 
 const TAGS: Record<string, string> = { home: 'Heim', away: 'Auswärts', tournament: 'Turnier' };
@@ -19,10 +29,37 @@ function plural(n: number, one: string, many: string) {
   return n === 1 ? one : many.replace('#', String(n));
 }
 
-export default function SeasonView({ guardianName, initialChildren }: Props) {
+const NOT_SAVED =
+  'Das hat nicht geklappt. Bitte prüfe deine Verbindung und versuch es noch einmal.';
+
+// "Nein, wir sind da" is remembered in the browser only; storage may be blocked
+const NO_KEY = 'ferien-nein';
+function readNo() {
+  try {
+    return JSON.parse(localStorage.getItem(NO_KEY) ?? '[]') as string[];
+  } catch {
+    return [];
+  }
+}
+function holidayKey(h: Holiday) {
+  return `${h.name}:${h.from}`;
+}
+
+export default function SeasonView({
+  guardianName,
+  initialChildren,
+  initialAbsences,
+  holidays,
+  today,
+  calendarUrl,
+}: Props) {
   const [children, setChildren] = useState(initialChildren);
+  const [absences, setAbsences] = useState(initialAbsences);
   const [selectedId, setSelectedId] = useState(initialChildren[0]?.playerId);
   const [error, setError] = useState<string | null>(null);
+  // Read after the first render, so server and browser render the same
+  const [saidNo, setSaidNo] = useState<string[] | null>(null);
+  useEffect(() => setSaidNo(readNo()), []);
   const child = children.find((c) => c.playerId === selectedId) ?? children[0];
 
   if (!child) {
@@ -42,9 +79,57 @@ export default function SeasonView({ guardianName, initialChildren }: Props) {
     const { error } = await actions.setResponses({ playerId, eventIds, status });
     if (error) {
       setChildren((all) => applyStatus(all, playerId, before));
-      setError('Das hat nicht geklappt. Bitte prüfe deine Verbindung und versuch es noch einmal.');
+      setError(NOT_SAVED);
     }
   }
+
+  function applyChanges(changed: ChangedAnswer[], status: Status | null) {
+    setChildren((all) =>
+      [...changesByPlayer(changed, status)].reduce(
+        (result, [playerId, statuses]) => applyStatus(result, playerId, statuses),
+        all,
+      ),
+    );
+  }
+
+  async function addAbsence(absence: NewAbsence) {
+    setError(null);
+    const { data, error } = await actions.addAbsence(absence);
+    if (error) {
+      setError(NOT_SAVED);
+      return false;
+    }
+    setAbsences((all) => [...all, ...data.absences].sort((a, b) => a.from.localeCompare(b.from)));
+    applyChanges(data.changed, 'out');
+    return true;
+  }
+
+  async function removeAbsence(absenceId: string) {
+    setError(null);
+    const { data, error } = await actions.removeAbsence({ absenceId });
+    if (error) {
+      setError(NOT_SAVED);
+      return;
+    }
+    setAbsences((all) => all.filter((a) => a.id !== absenceId));
+    applyChanges(data.changed, null);
+  }
+
+  function sayNo(holiday: Holiday) {
+    const next = [...(saidNo ?? []), holidayKey(holiday)];
+    setSaidNo(next);
+    try {
+      localStorage.setItem(NO_KEY, JSON.stringify(next));
+    } catch {
+      // Not remembered – the question comes back next time
+    }
+  }
+
+  const question =
+    saidNo &&
+    holidayQuestions(holidays, children, absences, today).find(
+      (h) => !saidNo.includes(holidayKey(h)),
+    );
 
   const open = openGames(child);
   const answerable = child.games.filter((g) => !g.cancelled);
@@ -114,6 +199,21 @@ export default function SeasonView({ guardianName, initialChildren }: Props) {
         )}
       </div>
 
+      {question && (
+        <HolidayQuestion
+          holiday={question}
+          onNo={() => sayNo(question)}
+          onYes={() =>
+            addAbsence({
+              playerIds: children.map((c) => c.playerId),
+              from: question.from < today ? today : question.from,
+              to: question.to,
+              note: question.name,
+            })
+          }
+        />
+      )}
+
       {error && (
         <p
           role="alert"
@@ -135,7 +235,17 @@ export default function SeasonView({ guardianName, initialChildren }: Props) {
 
       <Trainings child={child} onAnswer={(id, status) => save([id], status)} />
 
+      <AbsenceSection
+        children={children}
+        absences={absences}
+        holidays={holidays}
+        today={today}
+        onAdd={addAbsence}
+        onRemove={removeAbsence}
+      />
+
       <div class="flex flex-col gap-2.5 px-4 pt-7 pb-10 text-[15px]">
+        {calendarUrl && <CalendarLink url={calendarUrl} />}
         <span class="text-text-light">
           Dieser Link ist nur für {guardianName}. Bitte nicht weitergeben.
         </span>
@@ -367,5 +477,35 @@ function Trainings({
         </ul>
       )}
     </section>
+  );
+}
+
+/** webcal:// opens the subscription dialog on iPhone and Mac; Google Calendar needs the link. */
+function CalendarLink({ url }: { url: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div class="flex flex-col gap-1">
+      <a href={url.replace(/^https?:/, 'webcal:')} class="font-semibold">
+        Termine im Kalender abonnieren
+      </a>
+      <span class="text-text-light">
+        Nur Termine, bei denen deine Kinder dabei sind. Für Google Kalender:{' '}
+        <button
+          type="button"
+          class="font-semibold text-jersey underline"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(url);
+              setCopied(true);
+            } catch {
+              window.prompt('Kalender-Link', url);
+            }
+          }}
+        >
+          {copied ? 'Link kopiert ✓' : 'Link kopieren'}
+        </button>{' '}
+        und unter „Weitere Kalender → Per URL“ einfügen.
+      </span>
+    </div>
   );
 }

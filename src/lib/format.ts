@@ -42,3 +42,17 @@ export function deadline(iso: string) {
 export function longDate(iso: string) {
   return parts(iso, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
+
+/** "2027-04-17" – the day in Berlin, as date inputs and absences use it */
+export function isoDay(iso: string) {
+  return parts(iso, { year: 'numeric', month: '2-digit', day: '2-digit' })
+    .split('.')
+    .reverse()
+    .join('-');
+}
+
+/** "18.05.–29.05." for two YYYY-MM-DD days, or "18.05." for one */
+export function dayRange(from: string, to: string) {
+  const short = (day: string) => `${day.slice(8, 10)}.${day.slice(5, 7)}.`;
+  return from === to ? short(from) : `${short(from)}–${short(to)}`;
+}

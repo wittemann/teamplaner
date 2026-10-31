@@ -1,6 +1,7 @@
 // Input schemas and database work behind the Admin API. Everything a coach can do, plus setting
 // up teams, families and coaches, which only Martin does (through Claude).
 import { z } from 'astro/zod';
+import { applyAbsencesToEvents } from '../absence.ts';
 import { groupByStatus } from '../answers.ts';
 import { playerName, teamOverview, type CoachEvent } from '../coach.ts';
 import type { Db } from '../db/client.ts';
@@ -177,6 +178,8 @@ export async function createEvents(db: Db, input: z.infer<typeof createEventsInp
     );
     ids.push(row.id);
   }
+  // Children who already said they're away get "out" for the new events too
+  await applyAbsencesToEvents(db, ids);
   return { created: ids };
 }
 

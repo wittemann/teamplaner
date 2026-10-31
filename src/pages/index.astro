@@ -4,16 +4,40 @@
 import Base from '../layouts/Base.astro';
 import SeasonView from '../components/SeasonView.tsx';
 import { getDb } from '../lib/db/index.ts';
+import holidays from '../data/holidays-bw.json';
+import { listAbsences } from '../lib/absence.ts';
+import { calendarToken, rememberCalendarToken } from '../lib/calendar.ts';
+import { FAMILY_COOKIE } from '../lib/cookie.ts';
+import { isoDay } from '../lib/format.ts';
 import { loadSeason } from '../lib/season.ts';
 
 const { guardian } = Astro.locals;
-const children = guardian ? await loadSeason(await getDb(), guardian.id) : [];
+const today = isoDay(new Date().toISOString());
+const db = guardian ? await getDb() : undefined;
+const children = guardian && db ? await loadSeason(db, guardian.id) : [];
+const absences = guardian && db ? await listAbsences(db, guardian.id, today) : [];
+
+// The calendar link follows the personal link in the cookie (lib/calendar.ts)
+const accessToken = Astro.cookies.get(FAMILY_COOKIE)?.value;
+let calendarUrl: string | undefined;
+if (guardian && db && accessToken) {
+  await rememberCalendarToken(db, guardian.id, accessToken);
+  calendarUrl = new URL(`/kalender/${calendarToken(accessToken)}.ics`, Astro.url).href;
+}
 const invalidLink = Astro.url.searchParams.get('link') === 'ungueltig';
 ---
 
 <Base title="Unsere Termine · Bretten Kangaroos" who={guardian?.name}>
   {guardian ? (
-    <SeasonView client:load guardianName={guardian.name} initialChildren={children} />
+    <SeasonView
+      client:load
+      guardianName={guardian.name}
+      initialChildren={children}
+      initialAbsences={absences}
+      holidays={holidays.holidays}
+      today={today}
+      calendarUrl={calendarUrl}
+    />
   ) : (
     <div class="flex flex-col gap-3 bg-chalk px-4 py-7">
       <p class="label">Teamplaner</p>
