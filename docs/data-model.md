@@ -46,11 +46,11 @@ Team ──< TeamMember >── Player ──< Guardianship >── Family/Guard
 - player_id, from, to (Tage in Berliner Zeit, inklusive), note, created_by → setzt Responses auf „out“ mit responded_by `absence:<id>`; Entfernen nimmt genau diese zurück. Neue Termine (Admin-API) bekommen das „out“ auch.
 
 **PushSubscription** – id, guardian_id | coach_id, endpoint, p256dh, auth, user_agent, created_at, last_success_at
-→ mehrere pro Person (ein Eintrag je Gerät); bei Fehler 404/410 vom Push-Dienst löschen.
+→ mehrere pro Person (ein Eintrag je Gerät); bei Fehler 404/410 vom Push-Dienst löschen. Ein Gerät gehört zu höchstens einer Familie und einem Trainer: meldet sich eine andere Familie darauf an, verliert die alte es.
 
 **Event.coach_note** – Hinweis des Trainers am Termin („Treffpunkt geändert“), mit coach_note_updated_at
 
-Umgesetzt in `db/migrations/` (bisher: Team, Player, TeamMember, Guardian, Guardianship, Event, Response, Coach, CoachTeam, Absence).
+Umgesetzt in `db/migrations/` (Team, Player, TeamMember, Guardian, Guardianship, Event, Response, Coach, CoachTeam, Absence, ReminderMail, PushSubscription).
 
 **Guardian.calendar_token_hash** – Kalender-Abo `/kalender/<token>.ics`. Der Token wird aus dem persönlichen Link abgeleitet; ein neuer Link beendet also auch das alte Abo.
 

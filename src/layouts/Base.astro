@@ -12,6 +12,10 @@ type Props = {
 };
 
 const { title, who, wide = false } = Astro.props;
+// The manifest carries the personal link of the cookie, so it must be fetched with cookies
+const manifest = Astro.url.pathname.startsWith('/trainer')
+  ? '/manifest.webmanifest?bereich=trainer'
+  : '/manifest.webmanifest';
 ---
 
 <html lang="de">
@@ -25,6 +29,9 @@ const { title, who, wide = false } = Astro.props;
     <meta name="theme-color" content="#23461E" />
     <title>{title}</title>
     <link rel="icon" type="image/png" href="/crest.png" />
+    <link rel="manifest" href={manifest} crossorigin="use-credentials" />
+    <link rel="apple-touch-icon" href="/crest.png" />
+    <meta name="apple-mobile-web-app-title" content="Kangaroos" />
     <Font cssVariable="--font-barlow" preload />
     <Font cssVariable="--font-barlow-condensed" preload />
   </head>

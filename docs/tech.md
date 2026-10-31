@@ -76,6 +76,23 @@ Web Push – was es braucht:
 - Jedes Gerät meldet sich einzeln an (mehrere pro Elternteil möglich).
 - Hinweise am Termin und späte Änderungen werden **sofort** beim Speichern verschickt (kein Cron nötig).
 
+Umsetzung (2026-10-31):
+
+- `public/sw.js` zeigt die Nachricht und öffnet beim Antippen die Seite (kein Offline-Cache).
+- `/manifest.webmanifest` (Trainer: `?bereich=trainer`) wird pro Person erzeugt: Startadresse ist
+  der persönliche Link aus dem Cookie, weil eine installierte App auf dem iPhone die Cookies des
+  Browsers nicht sicher mitbekommt. Deshalb `crossorigin="use-credentials"` und `no-store`.
+- `components/PushSetup.tsx`: iPhone im Browser → Anleitung „Zum Home-Bildschirm“; sonst Knopf
+  „Einschalten“, bis das Gerät angemeldet ist; danach eine leise Zeile mit „Ausschalten“.
+  Anmelden über `POST /api/push` (für die Familie oder den Trainer des Cookies).
+- Hinweis am Termin: nur wenn neu oder geändert, an Familien mit Zusage (Training: nicht abgemeldet).
+  Keine Mail – der Hinweis steht auf der Seite; der Trainer sieht, wie viele ihn nicht bekommen.
+- Späte Änderung: Push an den Trainer; Mail nur, wenn kein Gerät sie bekommen hat.
+- Erinnerungen „noch offen“ gehen weiterhin nur per Mail (mit Antwort-Knöpfen).
+- `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (Vercel); ohne sie bietet die Seite keine
+  Benachrichtigungen an und alles geht per Mail. Schlüssel nie wechseln – sonst müssen sich alle
+  Geräte neu anmelden.
+
 ## Späte Änderungen an Trainer
 
 - Jede Stelle, an der Eltern speichern (Antippen, „Bei allen dabei“, Abwesenheit eintragen/löschen,
@@ -104,7 +121,7 @@ Web Push – was es braucht:
   wurden): Claude schickt sie über die Admin-API (`POST /reminders`, Modus `all` = alle mit offenen Spielen).
 - Erste Erinnerung zu einem Kind an einen Elternteil, jede weitere an alle Eltern des Kindes. Höchstens
   eine Erinnerung pro Elternteil und Tag. Protokoll in `reminder_mail`.
-- Vorerst nur Mail; Push folgt mit Web Push.
+- Nur Mail, auch wenn die Familie Benachrichtigungen hat (die Mail hat die Antwort-Knöpfe).
 - Antwort-Knöpfe: `/antwort/<token>`, signiert (HMAC mit `LINK_KEY` über Eltern, Kind, Spiel, Antwort und
   den aktuellen persönlichen Link) statt gespeichert – ein erneuerter Link macht alte Knöpfe ungültig.
 

@@ -4,6 +4,7 @@ import type { Db } from './db/client.ts';
 import { createTestDb, insert } from './db/test-db.ts';
 import { lateWindow, reportLateChanges, withLateReport } from './late-change.ts';
 import type { Mail } from './mail.ts';
+import { saveSubscription } from './push.ts';
 import { setResponses } from './season.ts';
 
 const ORIGIN = 'https://team.bretten-kangaroos.net';
@@ -16,6 +17,7 @@ describe('late changes', () => {
   let early: string;
   let ella: string;
   let anna: string;
+  let tom: string;
   let mails: Mail[];
   const deps = {
     origin: ORIGIN,
@@ -47,11 +49,11 @@ describe('late changes', () => {
       ella,
     ]);
     await db.query('INSERT INTO team_member (team_id, player_id) VALUES ($1, $2)', [teamId, ella]);
-    const coach = await insert(db, 'coach', {
+    const coach = (tom = await insert(db, 'coach', {
       name: 'Tom',
       email: 'tom@example.org',
       access_token_hash: 'y',
-    });
+    }));
     await insert(db, 'coach', {
       name: 'Jana',
       email: 'jana@example.org',
@@ -132,6 +134,37 @@ describe('late changes', () => {
         throw Object.assign(new Error('nope'), { code: 'EAUTH' });
       },
     });
-    expect(result).toEqual({ changes: 1, sent: 0, failed: 1 });
+    expect(result).toEqual({ changes: 1, pushed: 0, sent: 0, failed: 1 });
+  });
+
+  describe('with push', () => {
+    const subscription = { endpoint: 'https://push.example/tom', keys: { p256dh: 'p', auth: 'a' } };
+    beforeEach(() => saveSubscription(db, { coachId: tom }, subscription, null));
+
+    it('pushes instead of mailing when a device gets it', async () => {
+      const payloads: string[] = [];
+      const push = async (_: unknown, payload: string) => {
+        payloads.push(payload);
+      };
+      await withLateReport(db, anna, { ...deps, push }, () =>
+        setResponses(db, anna, ella, [late], 'out'),
+      );
+      expect(mails).toEqual([]);
+      const message = JSON.parse(payloads[0]);
+      expect(message.title).toBe('Späte Absage: Ella M.');
+      expect(message.body).toMatch(/^Ella M\. nicht dabei · .* vs\. Karlsruhe \(0 von min\. 9\)$/);
+      expect(message.url).toBe(`/trainer/termin/${late}`);
+    });
+
+    it('mails when the device is gone, and forgets the device', async () => {
+      const push = async () => {
+        throw Object.assign(new Error('gone'), { statusCode: 410 });
+      };
+      await withLateReport(db, anna, { ...deps, push }, () =>
+        setResponses(db, anna, ella, [late], 'out'),
+      );
+      expect(mails.map((m) => m.to)).toEqual(['tom@example.org']);
+      expect(await db.query('SELECT 1 FROM push_subscription')).toEqual([]);
+    });
   });
 });

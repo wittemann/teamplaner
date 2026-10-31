@@ -2,7 +2,7 @@
 // Parent season page (mockup: Main.dc.html). Without a valid family cookie it explains how to
 // get in: through the personal link.
 import Base from '../layouts/Base.astro';
-import { LINK_KEY } from 'astro:env/server';
+import { LINK_KEY, VAPID_PUBLIC_KEY } from 'astro:env/server';
 import SeasonView from '../components/SeasonView.tsx';
 import { getDb } from '../lib/db/index.ts';
 import holidays from '../data/holidays-bw.json';
@@ -40,6 +40,7 @@ const invalidLink = Astro.url.searchParams.get('link') === 'ungueltig';
       holidays={holidays.holidays}
       today={today}
       calendarUrl={calendarUrl}
+      pushKey={VAPID_PUBLIC_KEY}
     />
   ) : (
     <div class="flex flex-col gap-3 bg-chalk px-4 py-7">

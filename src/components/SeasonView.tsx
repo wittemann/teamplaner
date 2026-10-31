@@ -11,6 +11,7 @@ import { dayOfMonth, deadline, month, shortDate, time, weekday } from '../lib/fo
 import type { SeasonChild, SeasonEvent, Status } from '../lib/season.ts';
 import { applyStatus, currentStatuses, isOpen, openGames } from '../lib/season-state.ts';
 import { AbsenceSection, HolidayQuestion, type NewAbsence } from './Absences.tsx';
+import PushSetup from './PushSetup.tsx';
 
 type Props = {
   guardianName: string;
@@ -21,6 +22,8 @@ type Props = {
   today: string;
   /** https URL of the family's calendar (lib/calendar.ts) */
   calendarUrl?: string;
+  /** VAPID public key; without it there are no notifications to offer */
+  pushKey?: string;
 };
 
 const TAGS: Record<string, string> = { home: 'Heim', away: 'Auswärts', tournament: 'Turnier' };
@@ -52,6 +55,7 @@ export default function SeasonView({
   holidays,
   today,
   calendarUrl,
+  pushKey,
 }: Props) {
   const [children, setChildren] = useState(initialChildren);
   const [absences, setAbsences] = useState(initialAbsences);
@@ -202,6 +206,8 @@ export default function SeasonView({
           </button>
         )}
       </div>
+
+      {pushKey && <PushSetup as="family" publicKey={pushKey} class="mx-4 mt-4" />}
 
       {question && (
         <HolidayQuestion

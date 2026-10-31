@@ -76,7 +76,8 @@ nächsten Spiele `counts` + `open` zusammenfassen, Mindestzahl prüfen, späte �
 Auf Wunsch WhatsApp-Text schreiben (kurz, Datum, Treffpunkt, offene Vornamen).
 
 **Verlegung/Absage:** `PATCH /events/<id>` mit neuer Zeit bzw. `cancelled`. Familien werden noch
-**nicht** automatisch benachrichtigt (Push/Mail kommt später) – Martin auf WhatsApp-Text hinweisen.
+**nicht** automatisch benachrichtigt (das tut nur der Trainerbereich) – Martin auf WhatsApp-Text
+hinweisen. Ebenso `coachNote` über die API: steht auf der Seite, geht aber nicht als Push raus.
 
 **Neue Familie:** Kind + Elternteil per `POST /families`; zweiter Elternteil mit `{ playerId }`.
 Den zurückgegebenen Link Martin geben, nicht speichern.

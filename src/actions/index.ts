@@ -6,11 +6,12 @@ import { addAbsence, removeAbsence } from '../lib/absence.ts';
 import { getDb } from '../lib/db/index.ts';
 import { withLateReport } from '../lib/late-change.ts';
 import { sendMail } from '../lib/mail.ts';
+import { pushSender } from '../lib/push-sender.ts';
 import { setResponses } from '../lib/season.ts';
 
 /** Changes after the deadline go to the coaches at once (lib/late-change.ts). */
 function late(url: URL) {
-  return { origin: url.origin, send: sendMail };
+  return { origin: url.origin, send: sendMail, push: pushSender() };
 }
 
 export const server = {

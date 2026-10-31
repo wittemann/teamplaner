@@ -1,5 +1,6 @@
 // Changes after the deadline (docs/tech.md, "Benachrichtigungen"): families may still change their
-// answer, but the coaches of the team hear about it at once – by mail for now, push later.
+// answer, but the coaches of the team hear about it at once – by push, or by mail to coaches
+// without a device signed up (or when no device got it).
 // Every place that saves a parent's answer takes a snapshot of the "late window" (games past their
 // deadline that haven't started) before and after; the difference is what changed late. That
 // covers single taps, "Bei allen dabei", absences and the mail buttons alike.
@@ -7,6 +8,7 @@ import type { Db } from './db/client.ts';
 import { deadline, shortDate, weekday } from './format.ts';
 import { escapeHtml, mailFrame, primaryButton, smallPrint } from './mail-html.ts';
 import type { Mail } from './mail.ts';
+import { pushTo, type PushMessage, type PushSender } from './push.ts';
 import type { Status } from './season.ts';
 
 type WindowRow = {
@@ -166,18 +168,45 @@ export function lateChangeMail(
   } satisfies Mail;
 }
 
+/** The same as a push: one line per change, a click opens the event (or the overview). */
+export function lateChangePush(items: LateItem[]) {
+  const first = items[0];
+  const kind = items.every((i) => i.after === 'out') ? 'Späte Absage' : 'Späte Änderung';
+  const lines = items.map((item) => {
+    const count = item.minPlayers
+      ? `${item.confirmed} von min. ${item.minPlayers}`
+      : `${item.confirmed} dabei`;
+    return `${item.playerName} ${word(item.after)} · ${weekday(item.startsAt)} ${shortDate(item.startsAt)} ${item.title} (${count})`;
+  });
+  const oneEvent = items.every((i) => i.eventId === first.eventId);
+  return {
+    title:
+      items.length === 1 ? `${kind}: ${first.playerName}` : `${kind}: ${items.length} Änderungen`,
+    body: lines.join('\n'),
+    url: oneEvent ? `/trainer/termin/${first.eventId}` : `/trainer?team=${first.teamId}`,
+  } satisfies PushMessage;
+}
+
+export type LateDeps = {
+  origin: string;
+  send: (mail: Mail) => Promise<void>;
+  /** Without one (no VAPID keys), every coach gets a mail */
+  push?: PushSender;
+};
+
 /**
- * Mails the coaches about what changed late between the two snapshots. Never throws: a failing
- * mail must not undo or block the family's answer.
+ * Tells the coaches what changed late between the two snapshots: by push, by mail if no device
+ * got it. Never throws: a failing notice must not undo or block the family's answer.
  */
 export async function reportLateChanges(
   db: Db,
   before: Map<string, Status | null>,
   after: Map<string, Status | null>,
-  deps: { origin: string; send: (mail: Mail) => Promise<void> },
+  deps: LateDeps,
 ) {
   const changes = diffLateWindow(before, after);
-  if (changes.length === 0) return { changes: 0, sent: 0, failed: 0 };
+  if (changes.length === 0) return { changes: 0, pushed: 0, sent: 0, failed: 0 };
+  let pushed = 0;
   let sent = 0;
   let failed = 0;
   try {
@@ -214,6 +243,16 @@ export async function reportLateChanges(
     for (const coach of await coachesFor(db, [...new Set(items.map((i) => i.teamId))])) {
       const mine = items.filter((i) => coach.teamIds.includes(i.teamId));
       if (mine.length === 0) continue;
+      const reached = await pushTo(
+        db,
+        { coachIds: [coach.coachId] },
+        lateChangePush(mine),
+        deps.push,
+      );
+      if (reached.size > 0) {
+        pushed++;
+        continue;
+      }
       try {
         await deps.send(lateChangeMail(coach.name, coach.email, mine, deps.origin));
         sent++;
@@ -225,14 +264,14 @@ export async function reportLateChanges(
   } catch (error) {
     console.error('late change: lookup failed', error instanceof Error ? error.name : 'unknown');
   }
-  return { changes: changes.length, sent, failed };
+  return { changes: changes.length, pushed, sent, failed };
 }
 
 /** Runs a parent's save between two snapshots and reports what changed late. */
 export async function withLateReport<T>(
   db: Db,
   guardianId: string,
-  deps: { origin: string; send: (mail: Mail) => Promise<void> },
+  deps: LateDeps,
   save: () => Promise<T>,
 ) {
   const before = await lateWindow(db, guardianId);

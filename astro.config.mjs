@@ -51,6 +51,16 @@ export default defineConfig({
       MAIL_FROM: envField.string({ context: 'server', access: 'secret', optional: true }),
       // Vercel sends it to the cron endpoint (/api/cron/reminders); without it the cron does nothing
       CRON_SECRET: envField.string({ context: 'server', access: 'secret', optional: true }),
+      // Web Push (src/lib/push.ts), a pair from `npx web-push generate-vapid-keys`. Without them
+      // the pages don't offer notifications and everything goes by mail.
+      VAPID_PUBLIC_KEY: envField.string({ context: 'server', access: 'public', optional: true }),
+      VAPID_PRIVATE_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+      // Contact for the push services, required by the VAPID standard
+      VAPID_SUBJECT: envField.string({
+        context: 'server',
+        access: 'public',
+        default: 'mailto:teamplaner@bretten-kangaroos.net',
+      }),
     },
   },
 });

@@ -9,6 +9,7 @@ import { getDb } from '../../lib/db/index.ts';
 import { shortDate, weekday } from '../../lib/format.ts';
 import { withLateReport } from '../../lib/late-change.ts';
 import { sendMail } from '../../lib/mail.ts';
+import { pushSender } from '../../lib/push-sender.ts';
 import { setResponses } from '../../lib/season.ts';
 
 const db = await getDb();
@@ -18,7 +19,7 @@ let state: 'invalid' | 'confirm' | 'saved' | 'closed' = 'invalid';
 if (target) {
   state = target.current === target.status ? 'saved' : 'confirm';
   if (Astro.request.method === 'POST' && state === 'confirm') {
-    const late = { origin: Astro.url.origin, send: sendMail };
+    const late = { origin: Astro.url.origin, send: sendMail, push: pushSender() };
     const saved = await withLateReport(db, target.guardianId, late, () =>
       setResponses(db, target.guardianId, target.playerId, [target.eventId], target.status),
     );
