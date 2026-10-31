@@ -10,19 +10,18 @@ Code: `src/pages/api/admin/`, Eingaben/Felder: `src/lib/admin/data.ts`.
 
 ## Verbindung
 
-| Ziel                  | Basis-URL                                                                           | Token                        |
-| --------------------- | ----------------------------------------------------------------------------------- | ---------------------------- |
-| Lokal (`npm run dev`) | `http://localhost:4321`                                                             | `ADMIN_TOKEN` in `.env`      |
-| Produktion            | `https://teamplaner-kappa.vercel.app` (später `https://team.bretten-kangaroos.net`) | `ADMIN_TOKEN` in `.env.neon` |
+Immer über `scripts/admin.ts` – es liest Token (und Vercel-Bypass) aus der Env-Datei, damit kein
+Geheimnis auf der Kommandozeile landet. `.env.neon` nicht mit `source` laden (die DB-URL enthält `&`).
 
 ```bash
-set -a; . ./.env.neon; set +a     # bzw. ./.env für lokal
-B=https://teamplaner-kappa.vercel.app/api/admin
-curl -s -H "Authorization: Bearer $ADMIN_TOKEN" "$B/teams"
+node scripts/admin.ts GET /teams                         # lokal: .env, http://localhost:4321
+node scripts/admin.ts --neon GET "/events?team=<id>"      # Produktion: .env.neon
+node scripts/admin.ts --neon PATCH /events/<id> '{"coachNote":"Treffpunkt 9 Uhr"}'
 ```
 
-Solange die `*.vercel.app`-Adresse durch Vercel Authentication geschützt ist, zusätzlich
-`-H "x-vercel-protection-bypass: $VERCEL_BYPASS"` (ebenfalls in `.env.neon`).
+Produktion: `https://teamplaner-kappa.vercel.app` (später `team.bretten-kangaroos.net`, dann
+`ADMIN_BASE_URL` in `.env.neon` setzen). `.env.neon` enthält `ADMIN_TOKEN` und `VERCEL_BYPASS`
+(Vercel Authentication schützt `*.vercel.app`). Vercel kennt nur den Hash (`ADMIN_TOKEN_HASH`).
 
 Tokens und Links **nie** in Commits, Docs oder Logs schreiben. Persönliche Links nur an Martin ausgeben.
 
