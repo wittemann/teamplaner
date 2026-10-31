@@ -49,7 +49,7 @@ tippen **„Bei allen dabei“** und nehmen nur die Ausnahmen raus – fertig in
 - [x] Vercel-Projekt (fra1) + Neon-Datenbank (Frankfurt), Testdaten online
 - [x] Subdomain `team.bretten-kangaroos.net` (A-Record bei IONOS → Vercel, 2026-10-31)
 - [x] Trainer-Ansicht (Übersicht mit Matrix, Termin mit Listen + Hinweis + WhatsApp-Text) + Admin-API für Claude
-- [x] Mailversand (IONOS-SMTP) – noch ohne Postfach/Zugangsdaten in Vercel
+- [x] Mailversand (IONOS-SMTP, Absender teamplaner@bretten-kangaroos.net) – live seit 2026-10-31
 - [ ] Erinnerungs-Mails, Web Push (Hinweis-Benachrichtigung, späte Änderungen an Trainer)
 - [x] Eltern: Abwesenheit (mit Ferien-Schnellauswahl), Ferienfrage, Kalender-Abo
 - [x] Eltern + Trainer: „Link verloren?“ (`/link`)
