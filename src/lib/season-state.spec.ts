@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { SeasonChild, SeasonEvent } from './season.ts';
-import { applyStatus, currentStatuses, openGames } from './season-state.ts';
+import {
+  applyStatus,
+  currentStatuses,
+  openGames,
+  trainingsByMonth,
+  upcomingWeek,
+} from './season-state.ts';
 
 function game(id: string, status: SeasonEvent['status'], confirmed = 5) {
   return {
@@ -66,5 +72,45 @@ describe('season state', () => {
     const ben = { ...ella, playerId: 'ben' };
     const [, benAfter] = applyStatus([ella, ben], 'ella', new Map([['g2', 'in']]));
     expect(benAfter).toBe(ben);
+  });
+});
+
+describe('upcoming week', () => {
+  // Di 20.04., Do 22.04., Di 27.04. (17:30 Berlin = 15:30 UTC), game Sa 24.04.
+  const at = (day: string) =>
+    ({
+      ...game(day, null),
+      type: 'training',
+      startsAt: `${day}T15:30:00.000Z`,
+    }) satisfies SeasonEvent;
+  const child: SeasonChild = {
+    ...ella,
+    games: [{ ...game('g', null), startsAt: '2027-04-24T09:00:00.000Z' }],
+    trainings: [at('2027-04-20'), at('2027-04-22'), at('2027-04-27')],
+  };
+
+  it('shows the rest of this week, games and trainings in time order', () => {
+    const week = upcomingWeek(child, '2027-04-21');
+    expect(week?.label).toBe('Diese Woche');
+    expect([week?.from, week?.to]).toEqual(['2027-04-19', '2027-04-25']);
+    expect(week?.events.map((e) => e.id)).toEqual(['2027-04-22', 'g']);
+  });
+
+  it('falls back to next week when this one has nothing left', () => {
+    const week = upcomingWeek(child, '2027-04-25');
+    expect(week?.label).toBe('Nächste Woche');
+    expect(week?.events.map((e) => e.id)).toEqual(['2027-04-27']);
+  });
+
+  it('is empty when both weeks are', () => {
+    expect(upcomingWeek(child, '2027-06-01')).toBeNull();
+  });
+
+  it('groups trainings by month', () => {
+    const months = trainingsByMonth({ ...child, trainings: [at('2027-04-29'), at('2027-05-04')] });
+    expect(months.map((m) => [m.label, m.trainings.length])).toEqual([
+      ['April', 1],
+      ['Mai', 1],
+    ]);
   });
 });

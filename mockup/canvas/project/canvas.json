@@ -1,18 +1,97 @@
 {
   "v": 3,
-  "createdOnFiles": { "v": 1, "at": "2026-10-29T12:00:00Z" },
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-10-29T12:00:00Z"
+  },
   "title": "Teamplaner Mockup",
-  "launch": { "view": "canvas" },
+  "launch": {
+    "view": "canvas"
+  },
   "pages": [],
   "boards": {
-    "Main.dc.html": { "x": 0, "y": 0, "w": 390, "h": 3000, "title": "Eltern · Saison", "is_interactive": true },
-    "Eltern-Abwesenheit.dc.html": { "x": 470, "y": 0, "w": 390, "h": 844, "title": "Eltern · Abwesenheit", "is_interactive": true },
-    "Eltern-Training.dc.html": { "x": 940, "y": 0, "w": 390, "h": 1300, "title": "Eltern · Trainings", "is_interactive": true },
-    "Eltern-Hinweise.dc.html": { "x": 1410, "y": 0, "w": 390, "h": 1100, "title": "Eltern · Home-Bildschirm & Push", "is_interactive": true },
-    "Eltern-Mail.dc.html": { "x": 1880, "y": 0, "w": 390, "h": 1150, "title": "Eltern · Erinnerungs-Mail", "is_interactive": true },
-    "Eltern-Link.dc.html": { "x": 2350, "y": 0, "w": 390, "h": 844, "title": "Eltern · Link verloren", "is_interactive": true },
-    "Trainer-Uebersicht.dc.html": { "x": 0, "y": 3420, "w": 1280, "h": 2100, "title": "Trainer · Übersicht", "expand": "fill", "is_interactive": true },
-    "Trainer-Termin.dc.html": { "x": 1360, "y": 3420, "w": 1280, "h": 1300, "title": "Trainer · Termin", "expand": "fill", "is_interactive": true }
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 3000,
+      "title": "Eltern · Saison",
+      "is_interactive": true
+    },
+    "Eltern-Abwesenheit.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Eltern · Abwesenheit",
+      "is_interactive": true
+    },
+    "Eltern-Training.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 1300,
+      "title": "Eltern · Trainings",
+      "is_interactive": true
+    },
+    "Eltern-Hinweise.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 1100,
+      "title": "Eltern · Home-Bildschirm & Push",
+      "is_interactive": true
+    },
+    "Eltern-Mail.dc.html": {
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 1150,
+      "title": "Eltern · Erinnerungs-Mail",
+      "is_interactive": true
+    },
+    "Eltern-Link.dc.html": {
+      "x": 2350,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Eltern · Link verloren",
+      "is_interactive": true
+    },
+    "Trainer-Uebersicht.dc.html": {
+      "x": 0,
+      "y": 3420,
+      "w": 1280,
+      "h": 2100,
+      "title": "Trainer · Übersicht",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Trainer-Termin.dc.html": {
+      "x": 1360,
+      "y": 3420,
+      "w": 1280,
+      "h": 1300,
+      "title": "Trainer · Termin",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Eltern-Zeitstrahl.dc.html": {
+      "x": 0,
+      "y": 5940,
+      "w": 390,
+      "h": 2400,
+      "title": "Variante A · Alle Termine nach Wochen",
+      "is_interactive": true
+    },
+    "Eltern-Diese-Woche.dc.html": {
+      "x": 470,
+      "y": 5940,
+      "w": 390,
+      "h": 2400,
+      "title": "Variante B · Diese Woche + Reiter",
+      "is_interactive": true
+    }
   },
   "order": [
     "Main.dc.html",
@@ -22,11 +101,32 @@
     "Eltern-Mail.dc.html",
     "Eltern-Link.dc.html",
     "Trainer-Uebersicht.dc.html",
-    "Trainer-Termin.dc.html"
+    "Trainer-Termin.dc.html",
+    "Eltern-Zeitstrahl.dc.html",
+    "Eltern-Diese-Woche.dc.html"
   ],
   "notes": {
-    "rowParents": { "x": 0, "y": -300, "text": "Eltern – am Handy", "kind": "title1", "maxW": 2740 },
-    "rowCoaches": { "x": 0, "y": 3120, "text": "Trainer – am Rechner", "kind": "title1", "maxW": 2640 }
+    "rowParents": {
+      "x": 0,
+      "y": -300,
+      "text": "Eltern – am Handy",
+      "kind": "title1",
+      "maxW": 2740
+    },
+    "rowCoaches": {
+      "x": 0,
+      "y": 3120,
+      "text": "Trainer – am Rechner",
+      "kind": "title1",
+      "maxW": 2640
+    },
+    "rowTrainings": {
+      "x": 0,
+      "y": 5640,
+      "text": "Eltern – Trainings sichtbarer (Varianten)",
+      "kind": "title1",
+      "maxW": 860
+    }
   },
   "designSystems": []
 }

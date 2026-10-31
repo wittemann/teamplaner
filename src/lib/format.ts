@@ -79,3 +79,8 @@ export function berlinIso(day: string, hhmm: string) {
   utc = local - berlinOffsetMinutes(new Date(utc)) * 60_000;
   return new Date(utc).toISOString();
 }
+
+/** "April" */
+export function longMonth(iso: string) {
+  return parts(iso, { month: 'long' });
+}

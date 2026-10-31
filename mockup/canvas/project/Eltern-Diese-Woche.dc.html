@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Eltern – Diese Woche und Reiter</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&amp;family=Barlow+Condensed:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#1E7B3C}a:hover{color:#23461E}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 2400px; box-sizing: border-box; background: #FFFFFF; font-family: 'Barlow', sans-serif; font-size: 17px; line-height: 1.5; color: #4A4A4A">
+
+  <header style="background: #23461E; color: #FFFFFF; height: 64px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <span style="width: 40px; height: 40px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; overflow: hidden">
+        <img src="/_blob/c67d46d18b2e95f921285e53693ca32c" alt="" style="width: 34px; height: 34px; object-fit: contain">
+      </span>
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; line-height: 1; text-transform: uppercase; letter-spacing: 0.04em">Bretten<br>Kangaroos</span>
+    </div>
+    <span style="font-size: 15px; color: #C7D8B8">Familie Müller</span>
+  </header>
+
+  <div style="background: #F7F6F1; border-bottom: 1px solid #E3E3DE; padding: 28px 16px 22px">
+    <p style="margin: 0 0 6px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; text-transform: uppercase; letter-spacing: 0.1em; color: #A3500F">Saison 2027</p>
+    <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 36px; line-height: 1.1; text-transform: uppercase; letter-spacing: 0.02em; color: #1D231B">Unsere Termine</h1>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px">
+      <button type="button" aria-pressed="true" style="min-height: 44px; padding: 0 18px; border-radius: 999px; border: 2px solid #23461E; background: #23461E; color: #FFFFFF; font-family: 'Barlow', sans-serif; font-size: 16px; font-weight: 600">Ella · Schüler</button>
+      <button type="button" aria-pressed="false" style="min-height: 44px; padding: 0 18px; border-radius: 999px; border: 2px solid #C9C9C2; background: #FFFFFF; color: #1D231B; font-family: 'Barlow', sans-serif; font-size: 16px; font-weight: 600">Ben · Jugend ✓</button>
+    </div>
+  </div>
+
+  <section style="padding: 20px 16px 0; display: flex; flex-direction: column; gap: 8px">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+      <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 26px; text-transform: uppercase; letter-spacing: 0.02em; color: #1D231B">Diese Woche</h2>
+      <span style="font-size: 14px; color: #6B6F68">19.–25. April</span>
+    </div>
+    <sc-for list="{{week}}" as="e" hint-placeholder-count="3">
+      <div style="{{e.rowStyle}}">
+        <div style="width: 52px; flex-shrink: 0; text-align: center; border-radius: 4px; background: #FFFFFF; padding: 4px 0; display: flex; flex-direction: column; line-height: 1.1">
+          <span style="font-size: 13px; font-weight: 600; color: #6B6F68; text-transform: uppercase">{{e.dow}}</span>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 700; color: #1D231B">{{e.day}}</span>
+        </div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3">
+          <strong style="color: #1D231B; font-size: 17px">{{e.title}}</strong>
+          <span style="font-size: 14px; color: #4A4A4A">{{e.time}}</span>
+          <span style="{{e.statusStyle}}">{{e.statusText}}</span>
+        </div>
+        <sc-if value="{{e.canOut}}" hint-placeholder-val="{{ true }}">
+          <button type="button" onClick="{{e.toggle}}" style="min-height: 44px; padding: 0 12px; border: 2px solid #C9C9C2; border-radius: 4px; background: #FFFFFF; color: #1D231B; font-family: 'Barlow', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer">{{e.outLabel}}</button>
+        </sc-if>
+        <sc-if value="{{e.canIn}}" hint-placeholder-val="{{ false }}">
+          <button type="button" onClick="{{e.toggle}}" style="min-height: 44px; padding: 0 12px; border: 2px solid #1E7B3C; border-radius: 4px; background: #FFFFFF; color: #1E7B3C; font-family: 'Barlow', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer">Doch dabei</button>
+        </sc-if>
+      </div>
+    </sc-for>
+  </section>
+
+  <div style="padding: 24px 16px 8px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; justify-content: space-between; align-items: baseline">
+      <strong style="color: #1D231B; font-size: 18px">{{statusText}}</strong>
+      <span style="font-size: 15px; color: #6B6F68">{{answeredText}}</span>
+    </div>
+    <div style="height: 10px; border-radius: 999px; background: #E3E3DE; overflow: hidden" role="img" aria-label="{{answeredText}}">
+      <div style="height: 10px; background: #1E7B3C; width: {{progress}}"></div>
+    </div>
+    <sc-if value="{{hasOpen}}" hint-placeholder-val="{{ true }}">
+      <button type="button" onClick="{{allIn}}" style="min-height: 52px; width: 100%; border: 0; border-radius: 4px; background: #A3500F; color: #FFFFFF; font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer">Bei allen offenen Spielen dabei</button>
+    </sc-if>
+    <a href="Eltern-Abwesenheit.dc.html" style="min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; border: 2px solid #1E7B3C; border-radius: 4px; color: #1E7B3C; text-decoration: none; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+      Abwesenheit eintragen
+    </a>
+  </div>
+
+  <div style="padding: 20px 16px 0">
+    <div role="group" aria-label="Spiele oder Trainings zeigen" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-bottom: 2px solid #E3E3DE">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="2">
+        <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.active}}" style="{{t.style}}">
+          <span>{{t.label}}</span>
+          <span style="{{t.badgeStyle}}">{{t.badge}}</span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{showGames}}" hint-placeholder-val="{{ true }}">
+    <div style="padding: 16px 16px 0; display: flex; flex-direction: column; gap: 12px">
+      <sc-for list="{{games}}" as="g" hint-placeholder-count="7">
+        <div style="{{g.cardStyle}}">
+          <div style="display: flex; gap: 14px">
+            <div style="width: 56px; flex-shrink: 0; text-align: center; border-radius: 4px; background: #F7F6F1; padding: 6px 0; display: flex; flex-direction: column; line-height: 1.1">
+              <span style="font-size: 13px; font-weight: 600; color: #6B6F68; text-transform: uppercase">{{g.dow}}</span>
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700; color: #1D231B">{{g.day}}</span>
+              <span style="font-size: 13px; font-weight: 600; color: #6B6F68; text-transform: uppercase">{{g.mon}}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+                <strong style="color: #1D231B; font-size: 18px">{{g.title}}</strong>
+                <span style="font-size: 13px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: #E3E3DE; color: #3A3F38">{{g.tag}}</span>
+              </div>
+              <span style="font-size: 15px; color: #4A4A4A">{{g.time}}</span>
+              <span style="font-size: 15px; color: #6B6F68">{{g.place}}</span>
+              <span style="{{g.needStyle}}">{{g.need}}</span>
+              <span style="font-size: 14px; color: #6B6F68">{{g.due}}</span>
+            </div>
+          </div>
+          <sc-if value="{{g.isOpen}}" hint-placeholder-val="{{ false }}">
+            <p style="margin: 12px 0 0; font-size: 14px; font-weight: 600; color: #A3500F; text-transform: uppercase; letter-spacing: 0.06em">Noch offen – bitte zu- oder absagen</p>
+          </sc-if>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px">
+            <button type="button" onClick="{{g.setIn}}" aria-pressed="{{g.isIn}}" style="{{g.inStyle}}">Dabei</button>
+            <button type="button" onClick="{{g.setOut}}" aria-pressed="{{g.isOut}}" style="{{g.outStyle}}">Nicht dabei</button>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{showTrainings}}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 16px 16px 0">
+      <div style="padding: 12px 14px; border-radius: 6px; background: #EEF4E8; font-size: 15px; line-height: 1.4; color: #1D231B">
+        <strong>Di + Do, 17:30–19:00 · Kangaroos Ballpark.</strong> Ella ist automatisch dabei – nur abmelden, wenn sie nicht kann.
+      </div>
+      <sc-for list="{{months}}" as="m" hint-placeholder-count="3">
+        <div>
+          <h3 style="margin: 20px 0 4px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: 0.04em; color: #1D231B">{{m.label}}</h3>
+          <ul style="list-style: none; margin: 0; padding: 0">
+            <sc-for list="{{m.rows}}" as="t" hint-placeholder-count="8">
+              <li style="min-height: 60px; border-bottom: 1px solid #E3E3DE; display: flex; align-items: center; gap: 12px; padding: 6px 0">
+                <strong style="width: 84px; flex-shrink: 0; color: #1D231B">{{t.dow}} {{t.date}}</strong>
+                <span style="{{t.statusStyle}}">{{t.statusText}}</span>
+                <sc-if value="{{t.canOut}}" hint-placeholder-val="{{ true }}">
+                  <button type="button" onClick="{{t.toggle}}" style="min-height: 44px; padding: 0 12px; border: 2px solid #C9C9C2; border-radius: 4px; background: #FFFFFF; color: #1D231B; font-family: 'Barlow', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer">Abmelden</button>
+                </sc-if>
+                <sc-if value="{{t.canIn}}" hint-placeholder-val="{{ false }}">
+                  <button type="button" onClick="{{t.toggle}}" style="min-height: 44px; padding: 0 12px; border: 2px solid #1E7B3C; border-radius: 4px; background: #FFFFFF; color: #1E7B3C; font-family: 'Barlow', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer">Doch dabei</button>
+                </sc-if>
+              </li>
+            </sc-for>
+          </ul>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <div style="padding: 28px 16px 40px; display: flex; flex-direction: column; gap: 10px; font-size: 15px">
+    <a href="#">Termine im Kalender abonnieren</a>
+    <span style="color: #6B6F68">Dieser Link ist nur für Familie Müller. Bitte nicht weitergeben.</span>
+    <a href="Eltern-Link.dc.html">Link verloren? Neuen anfordern</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"startTab":{"editor":"enum","options":["games","trainings"],"default":"games"},"$preview":{"width":390,"height":2400}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      r: { g2: null, g3: null, g4: null, g5: null, g6: null, g7: 'out', g8: null },
+      out: { '2027-04-29': true },
+      tab: null
+    };
+  }
+  renderVals() {
+    var self = this;
+    var DOW = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+    var MON = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+    var MONL = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+    var DAY = 86400000;
+    var d = function (m, day) { return new Date(Date.UTC(2027, m - 1, day)); };
+    var iso = function (x) { return x.toISOString().slice(0, 10); };
+    var two = function (n) { return String(n).padStart(2, '0'); };
+    var weekEnd = d(4, 25);
+    var cancelled = { '2027-05-06': 'Christi Himmelfahrt', '2027-05-27': 'Fronleichnam' };
+    var base = [
+      { id: 'g2', date: d(4, 24), title: 'bei Mannheim', tag: 'Auswärts', time: 'Treffpunkt 9:00 · Spielbeginn 11:30', short: 'Treffpunkt 9:00 · Abfahrt am Ballpark', place: 'Abfahrt am Ballpark', have: 8, due: 'Antwort bis Do 22.04., 20 Uhr' },
+      { id: 'g3', date: d(5, 8), title: 'vs. Karlsruhe', tag: 'Heim', time: 'Treffpunkt 9:30 · Spielbeginn 11:00', place: 'Kangaroos Ballpark', have: 7, due: 'Antwort bis Do 06.05., 20 Uhr' },
+      { id: 'g4', date: d(5, 22), title: 'bei Pforzheim', tag: 'Auswärts', time: 'Treffpunkt 9:15 · Spielbeginn 11:00', place: 'Abfahrt am Ballpark', have: 8, due: 'Antwort bis Do 20.05., 20 Uhr' },
+      { id: 'g5', date: d(6, 5), title: 'Schüler-Cup', tag: 'Turnier', time: 'Treffpunkt 8:30 · ganztägig', place: 'Kangaroos Ballpark', have: 10, due: 'Antwort bis Do 03.06., 20 Uhr' },
+      { id: 'g6', date: d(6, 19), title: 'vs. Mannheim', tag: 'Heim', time: 'Treffpunkt 9:30 · Spielbeginn 11:00', place: 'Kangaroos Ballpark', have: 6, due: 'Antwort bis Do 17.06., 20 Uhr' },
+      { id: 'g7', date: d(6, 26), title: 'bei Heidelberg', tag: 'Auswärts', time: 'Treffpunkt 9:00 · Spielbeginn 11:00', place: 'Abfahrt am Ballpark', have: 11, due: 'Antwort bis Do 24.06., 20 Uhr' },
+      { id: 'g8', date: d(7, 10), title: 'vs. Pforzheim', tag: 'Heim', time: 'Treffpunkt 9:30 · Spielbeginn 11:00', place: 'Kangaroos Ballpark', have: 7, due: 'Antwort bis Do 08.07., 20 Uhr' }
+    ];
+    var r = this.state.r;
+    var out = this.state.out;
+    var setGame = function (id, v) {
+      var next = Object.assign({}, self.state.r);
+      next[id] = v;
+      self.setState({ r: next });
+    };
+    var toggleTraining = function (key) {
+      var next = Object.assign({}, self.state.out);
+      next[key] = !next[key];
+      self.setState({ out: next });
+    };
+    var btn = 'min-height: 48px; border-radius: 4px; font-family: \'Barlow\', sans-serif; font-size: 17px; font-weight: 600; cursor: pointer; ';
+
+    var games = base.map(function (g) {
+      var v = r[g.id];
+      var have = g.have + (v === 'in' ? 1 : 0);
+      var missing = 9 - have;
+      return Object.assign({}, g, {
+        dow: DOW[g.date.getUTCDay()], day: two(g.date.getUTCDate()), mon: MON[g.date.getUTCMonth()],
+        need: missing > 0 ? (missing === 1 ? 'Noch 1 Zusage bis 9 Spieler' : 'Noch ' + missing + ' Zusagen bis 9 Spieler') : have + ' dabei – genug Spieler',
+        needStyle: 'font-size: 15px; font-weight: 600; color: ' + (missing > 0 ? '#A3500F' : '#1E7B3C'),
+        isIn: v === 'in', isOut: v === 'out', isOpen: !v,
+        setIn: function () { setGame(g.id, 'in'); },
+        setOut: function () { setGame(g.id, 'out'); },
+        cardStyle: 'border-radius: 6px; padding: 16px; background: #FFFFFF; ' + (!v ? 'border: 2px solid #A3500F' : 'border: 1px solid #E3E3DE'),
+        inStyle: btn + (v === 'in' ? 'background: #1E7B3C; color: #FFFFFF; border: 2px solid #1E7B3C' : 'background: #FFFFFF; color: #1D231B; border: 2px solid #C9C9C2'),
+        outStyle: btn + (v === 'out' ? 'background: #A3500F; color: #FFFFFF; border: 2px solid #A3500F' : 'background: #FFFFFF; color: #1D231B; border: 2px solid #C9C9C2')
+      });
+    });
+
+    var trainings = [];
+    for (var t = d(4, 20).getTime(); t <= d(7, 8).getTime(); t += DAY) {
+      var day = new Date(t);
+      var wd = day.getUTCDay();
+      if (wd !== 2 && wd !== 4) continue;
+      (function (date) {
+        var key = iso(date);
+        var reason = cancelled[key];
+        var isOut = !reason && !!out[key];
+        trainings.push({
+          date: date, dow: DOW[wd], day: two(date.getUTCDate()), date2: two(date.getUTCDate()) + '.' + two(date.getUTCMonth() + 1) + '.',
+          canOut: !reason && !isOut, canIn: isOut,
+          statusText: reason ? 'Fällt aus · ' + reason : (isOut ? 'Abgemeldet' : 'Dabei ✓'),
+          statusStyle: 'flex: 1; min-width: 0; font-size: 15px; font-weight: 600; color: ' + (reason ? '#6B6F68' : (isOut ? '#A3500F' : '#1E7B3C')),
+          toggle: function () { toggleTraining(key); }
+        });
+      })(day);
+    }
+
+    // This week: trainings and the game, each with its one quick action
+    var rowBase = 'min-height: 64px; border-radius: 6px; padding: 10px 12px; display: flex; align-items: center; gap: 12px; background: ';
+    var week = [];
+    trainings.filter(function (x) { return x.date <= weekEnd; }).forEach(function (x) {
+      week.push({
+        date: x.date, dow: x.dow, day: x.day, title: 'Training', time: '17:30–19:00 · Ballpark',
+        statusText: x.statusText, statusStyle: 'font-size: 14px; font-weight: 600; color: ' + (x.canIn ? '#A3500F' : '#1E7B3C'),
+        canOut: x.canOut, canIn: x.canIn, outLabel: 'Abmelden', toggle: x.toggle,
+        rowStyle: rowBase + (x.canIn ? '#FFF4E5' : '#F7F6F1')
+      });
+    });
+    games.filter(function (g) { return g.date <= weekEnd; }).forEach(function (g) {
+      week.push({
+        date: g.date, dow: g.dow, day: g.day, title: g.title, time: g.short,
+        statusText: g.isOpen ? 'Noch offen' : (g.isIn ? 'Dabei ✓' : 'Nicht dabei'),
+        statusStyle: 'font-size: 14px; font-weight: 600; color: ' + (g.isIn ? '#1E7B3C' : '#A3500F'),
+        canOut: !g.isIn, canIn: false, outLabel: 'Dabei', toggle: g.setIn,
+        rowStyle: rowBase + '#FFFFFF; border: 2px solid ' + (g.isOpen ? '#A3500F' : '#E3E3DE')
+      });
+    });
+    week.sort(function (a, b) { return a.date - b.date; });
+
+    var months = [];
+    trainings.forEach(function (x) {
+      var label = MONL[x.date.getUTCMonth()];
+      var last = months[months.length - 1];
+      if (!last || last.label !== label) { last = { label: label, rows: [] }; months.push(last); }
+      last.rows.push({ dow: x.dow, date: x.date2, statusText: x.statusText, statusStyle: x.statusStyle, canOut: x.canOut, canIn: x.canIn, toggle: x.toggle });
+    });
+
+    var open = games.filter(function (g) { return g.isOpen; }).length;
+    var answered = games.length - open;
+    var offs = trainings.filter(function (x) { return x.canIn; }).length;
+    var tab = this.state.tab || this.props.startTab || 'games';
+    var tabBase = 'min-height: 52px; margin-bottom: -2px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: \'Barlow Condensed\', sans-serif; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; ';
+    var badgeBase = 'font-family: \'Barlow\', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: none; padding: 1px 8px; border-radius: 999px; ';
+    var tabs = [
+      { id: 'games', label: 'Spiele', badge: open > 0 ? open + ' offen' : 'alle ✓', warn: open > 0 },
+      { id: 'trainings', label: 'Trainings', badge: offs === 0 ? String(trainings.length) : offs + ' abgemeldet', warn: false }
+    ].map(function (x) {
+      var active = tab === x.id;
+      return {
+        label: x.label, badge: x.badge, active: active,
+        style: tabBase + (active ? 'color: #1D231B; border-bottom: 3px solid #1E7B3C' : 'color: #6B6F68; border-bottom: 3px solid transparent'),
+        badgeStyle: badgeBase + (x.warn ? 'background: #A3500F; color: #FFFFFF' : 'background: #E3E3DE; color: #3A3F38'),
+        pick: function () { self.setState({ tab: x.id }); }
+      };
+    });
+
+    return {
+      week: week,
+      games: games,
+      months: months,
+      tabs: tabs,
+      showGames: tab === 'games',
+      showTrainings: tab === 'trainings',
+      hasOpen: open > 0,
+      statusText: open > 0 ? (open === 1 ? 'Noch 1 Spiel offen' : 'Noch ' + open + ' Spiele offen') : 'Saison bestätigt ✓',
+      answeredText: answered + ' von ' + games.length + ' beantwortet',
+      progress: Math.round(answered / games.length * 100) + '%',
+      allIn: function () {
+        var next = Object.assign({}, self.state.r);
+        Object.keys(next).forEach(function (k) { if (!next[k]) next[k] = 'in'; });
+        self.setState({ r: next });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

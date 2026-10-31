@@ -1,15 +1,23 @@
-// The season of a family on one page (mockup: Main.dc.html, Eltern-Training.dc.html):
-// one tab per child, games with Dabei / Nicht dabei, "Bei allen offenen Spielen dabei" and the
-// trainings (in by default, parents only opt out). Taps show at once; if saving fails, the
-// answer goes back and a message says so. Below: absences and the question about the next
-// school holidays (components/Absences.tsx).
+// The season of a family on one page (mockup: Eltern-Diese-Woche.dc.html): one button per
+// child, "Diese Woche" with the next games and trainings, then tabs for all games (Dabei /
+// Nicht dabei, "Bei allen offenen Spielen dabei") and all trainings (in by default, parents
+// only opt out). Taps show at once; if saving fails, the answer goes back and a message says
+// so. Below: absences and the question about the next school holidays (components/Absences.tsx).
 import { actions } from 'astro:actions';
 import { useEffect, useState } from 'preact/hooks';
 import type { Absence, ChangedAnswer } from '../lib/absence.ts';
 import { changesByPlayer, holidayQuestions, type Holiday } from '../lib/absence-state.ts';
-import { dayOfMonth, deadline, month, shortDate, time, weekday } from '../lib/format.ts';
+import { dayOfMonth, dayRange, deadline, month, shortDate, time, weekday } from '../lib/format.ts';
 import type { SeasonChild, SeasonEvent, Status } from '../lib/season.ts';
-import { applyStatus, currentStatuses, isOpen, openGames } from '../lib/season-state.ts';
+import {
+  applyStatus,
+  currentStatuses,
+  isOpen,
+  openGames,
+  trainingsByMonth,
+  upcomingWeek,
+  type Week,
+} from '../lib/season-state.ts';
 import { AbsenceSection, HolidayQuestion, type NewAbsence } from './Absences.tsx';
 import PushSetup from './PushSetup.tsx';
 
@@ -60,6 +68,7 @@ export default function SeasonView({
   const [children, setChildren] = useState(initialChildren);
   const [absences, setAbsences] = useState(initialAbsences);
   const [selectedId, setSelectedId] = useState(initialChildren[0]?.playerId);
+  const [tab, setTab] = useState<'games' | 'trainings' | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Read after the first render, so server and browser render the same
   const [saidNo, setSaidNo] = useState<string[] | null>(null);
@@ -138,6 +147,9 @@ export default function SeasonView({
   const open = openGames(child);
   const answerable = child.games.filter((g) => !g.cancelled);
   const answered = answerable.length - open.length;
+  const week = upcomingWeek(child, today);
+  // Without games (winter) the trainings come first
+  const shownTab = tab ?? (child.games.length === 0 ? 'trainings' : 'games');
 
   return (
     <>
@@ -170,7 +182,9 @@ export default function SeasonView({
         )}
       </div>
 
-      <div class="flex flex-col gap-3.5 px-4 pt-5 pb-2">
+      {week && <ThisWeek week={week} onAnswer={(id, status) => save([id], status)} />}
+
+      <div class="flex flex-col gap-3.5 px-4 pt-6 pb-2">
         <div class="flex items-baseline justify-between">
           <strong class="text-lg text-ink">
             {open.length > 0
@@ -233,17 +247,37 @@ export default function SeasonView({
         </p>
       )}
 
-      <section class="px-4 pt-4">
-        <h2 class="heading mb-3 text-[26px]">Spiele</h2>
-        <div class="flex flex-col gap-3">
-          {child.games.map((g) => (
-            <GameCard key={g.id} game={g} onAnswer={(status) => save([g.id], status)} />
-          ))}
-          {child.games.length === 0 && <p>Noch keine Spiele eingetragen.</p>}
+      <section class="px-4 pt-5">
+        <div role="tablist" aria-label="Termine" class="grid grid-cols-2 border-b-2 border-line">
+          <Tab
+            id="games"
+            selected={shownTab === 'games'}
+            onSelect={() => setTab('games')}
+            label="Spiele"
+            badge={open.length > 0 ? `${open.length} offen` : 'alle ✓'}
+            warn={open.length > 0}
+          />
+          <Tab
+            id="trainings"
+            selected={shownTab === 'trainings'}
+            onSelect={() => setTab('trainings')}
+            label="Trainings"
+            badge={String(child.trainings.filter((t) => !t.cancelled).length)}
+          />
+        </div>
+        <div role="tabpanel" id={`panel-${shownTab}`} aria-labelledby={`tab-${shownTab}`}>
+          {shownTab === 'games' ? (
+            <div class="flex flex-col gap-3 pt-4">
+              {child.games.map((g) => (
+                <GameCard key={g.id} game={g} onAnswer={(status) => save([g.id], status)} />
+              ))}
+              {child.games.length === 0 && <p>Noch keine Spiele eingetragen.</p>}
+            </div>
+          ) : (
+            <Trainings child={child} onAnswer={(id, status) => save([id], status)} />
+          )}
         </div>
       </section>
-
-      <Trainings child={child} onAnswer={(id, status) => save([id], status)} />
 
       <AbsenceSection
         children={children}
@@ -407,6 +441,131 @@ function GameCard({ game, onAnswer }: { game: SeasonEvent; onAnswer: (s: Status)
   );
 }
 
+function Tab(props: {
+  id: string;
+  selected: boolean;
+  onSelect: () => void;
+  label: string;
+  badge: string;
+  warn?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      id={`tab-${props.id}`}
+      aria-selected={props.selected}
+      aria-controls={`panel-${props.id}`}
+      onClick={props.onSelect}
+      class={`-mb-0.5 flex min-h-13 items-center justify-center gap-2 border-b-3 font-condensed text-xl font-bold tracking-[0.04em] uppercase ${
+        props.selected ? 'border-jersey text-ink' : 'border-transparent text-text-light'
+      }`}
+    >
+      {props.label}
+      <span
+        class={`rounded-full px-2 py-px font-sans text-[13px] font-semibold tracking-normal normal-case ${
+          props.warn ? 'bg-rust text-white' : 'bg-line text-[#3A3F38]'
+        }`}
+      >
+        {props.badge}
+      </span>
+    </button>
+  );
+}
+
+/** The next games and trainings, each with its one quick answer. */
+function ThisWeek({
+  week,
+  onAnswer,
+}: {
+  week: Week;
+  onAnswer: (eventId: string, status: Status) => void;
+}) {
+  return (
+    <section class="flex flex-col gap-2 px-4 pt-5">
+      <div class="flex items-baseline justify-between gap-3">
+        <h2 class="heading text-[26px]">{week.label}</h2>
+        <span class="text-sm text-text-light">{dayRange(week.from, week.to)}</span>
+      </div>
+      {week.events.map((e) => {
+        const training = e.type === 'training';
+        const out = e.status === 'out';
+        const open = !training && isOpen(e);
+        return (
+          <div
+            key={e.id}
+            class={`flex min-h-16 items-center gap-3 rounded-md px-3 py-2.5 ${
+              training
+                ? out
+                  ? 'bg-note-bg'
+                  : 'bg-chalk'
+                : `border-2 bg-white ${open ? 'border-rust' : 'border-line'}`
+            } ${e.cancelled ? 'opacity-60' : ''}`}
+          >
+            <div class="flex w-13 shrink-0 flex-col rounded bg-white py-1 text-center leading-tight">
+              <span class="text-[13px] font-semibold text-text-light uppercase">
+                {weekday(e.startsAt)}
+              </span>
+              <span class="font-condensed text-2xl font-bold text-ink">
+                {dayOfMonth(e.startsAt)}
+              </span>
+            </div>
+            <div class="flex min-w-0 flex-1 flex-col leading-snug">
+              <strong class="text-[17px] text-ink">{e.title}</strong>
+              <span class="text-sm">
+                {e.meetAt ? `Treffpunkt ${time(e.meetAt)}` : time(e.startsAt)}
+                {e.endsAt && !e.meetAt && `–${time(e.endsAt)}`}
+                {e.locationName && ` · ${e.locationName}`}
+              </span>
+              <span
+                class={`text-sm font-semibold ${
+                  e.cancelled ? 'text-text-light' : out || open ? 'text-rust' : 'text-jersey'
+                }`}
+              >
+                {e.cancelled
+                  ? `Fällt aus${e.cancelReason ? ` · ${e.cancelReason}` : ''}`
+                  : open
+                    ? 'Noch offen'
+                    : out
+                      ? training
+                        ? 'Abgemeldet'
+                        : 'Nicht dabei'
+                      : 'Dabei ✓'}
+              </span>
+            </div>
+            {!e.cancelled &&
+              (training ? (
+                <AnswerButton
+                  positive={out}
+                  onClick={() => onAnswer(e.id, out ? 'in' : 'out')}
+                  label={out ? 'Doch dabei' : 'Abmelden'}
+                />
+              ) : (
+                e.status !== 'in' && (
+                  <AnswerButton positive onClick={() => onAnswer(e.id, 'in')} label="Dabei" />
+                )
+              ))}
+          </div>
+        );
+      })}
+    </section>
+  );
+}
+
+function AnswerButton(props: { positive: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={props.onClick}
+      class={`min-h-11 shrink-0 rounded border-2 bg-white px-3 text-[15px] font-semibold ${
+        props.positive ? 'border-jersey text-jersey' : 'border-pill text-ink'
+      }`}
+    >
+      {props.label}
+    </button>
+  );
+}
+
 function Trainings({
   child,
   onAnswer,
@@ -414,79 +573,52 @@ function Trainings({
   child: SeasonChild;
   onAnswer: (eventId: string, status: Status) => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
-  const optedOut = child.trainings.filter((t) => !t.cancelled && t.status === 'out').length;
-  const count = plural(optedOut, '1 Abmeldung', '# Abmeldungen').replace(
-    /^0 Abmeldungen$/,
-    'Keine Abmeldung',
-  );
-
+  if (child.trainings.length === 0) return <p class="pt-4">Noch keine Trainings eingetragen.</p>;
   return (
-    <section class="px-4 pt-7">
-      <h2 class="heading mb-3 text-[26px]">Trainings</h2>
-      <div class="flex flex-col gap-1.5 rounded-md border border-line p-4">
-        <span class="text-[15px] leading-snug">
-          {child.firstName} ist bei jedem Training automatisch dabei. Tippe nur auf{' '}
-          <strong class="text-ink">Abmelden</strong>, wenn {child.firstName} nicht kommen kann.
-        </span>
-        <strong class="text-[15px] text-rust">{count}</strong>
-        {child.trainings.length > 0 && (
-          <button
-            type="button"
-            aria-expanded={expanded}
-            onClick={() => setExpanded(!expanded)}
-            class="mt-1 self-start text-base font-semibold text-jersey hover:text-forest"
-          >
-            {expanded
-              ? 'Trainings ausblenden ↑'
-              : `Alle ${child.trainings.length} Trainings ansehen →`}
-          </button>
-        )}
-      </div>
-      {expanded && (
-        <ul class="mt-2">
-          {child.trainings.map((t) => (
-            <li key={t.id} class="flex min-h-16 items-center gap-3 border-b border-line py-2">
-              <div class="flex w-24 shrink-0 flex-col leading-tight">
-                <strong class="text-ink">
-                  {weekday(t.startsAt)} {shortDate(t.startsAt)}
-                </strong>
-                <span class="text-sm text-text-light">{time(t.startsAt)}</span>
-              </div>
-              <div class="min-w-0 flex-1 text-[15px]">
-                {t.cancelled ? (
-                  <span class="text-text-light">
-                    Fällt aus{t.cancelReason && ` · ${t.cancelReason}`}
+    <div class="pt-4">
+      <p class="rounded-md bg-[#EEF4E8] px-3.5 py-3 text-[15px] leading-snug text-ink">
+        {child.firstName} ist bei jedem Training automatisch dabei. Tippe nur auf{' '}
+        <strong>Abmelden</strong>, wenn {child.firstName} nicht kommen kann.
+      </p>
+      {trainingsByMonth(child).map((m) => (
+        <div key={m.label}>
+          <h3 class="heading mt-5 mb-1 text-xl">{m.label}</h3>
+          <ul>
+            {m.trainings.map((t) => (
+              <li key={t.id} class="flex min-h-16 items-center gap-3 border-b border-line py-2">
+                <div class="flex w-24 shrink-0 flex-col leading-tight">
+                  <strong class="text-ink">
+                    {weekday(t.startsAt)} {shortDate(t.startsAt)}
+                  </strong>
+                  <span class="text-sm text-text-light">
+                    {time(t.startsAt)}
+                    {t.endsAt && `–${time(t.endsAt)}`}
                   </span>
-                ) : t.status === 'out' ? (
-                  <span class="font-semibold text-rust">Abgemeldet</span>
-                ) : (
-                  <span class="font-semibold text-jersey">Dabei</span>
+                </div>
+                <div class="min-w-0 flex-1 text-[15px]">
+                  {t.cancelled ? (
+                    <span class="text-text-light">
+                      Fällt aus{t.cancelReason && ` · ${t.cancelReason}`}
+                    </span>
+                  ) : t.status === 'out' ? (
+                    <span class="font-semibold text-rust">Abgemeldet</span>
+                  ) : (
+                    <span class="font-semibold text-jersey">Dabei ✓</span>
+                  )}
+                </div>
+                {!t.cancelled && (
+                  <AnswerButton
+                    positive={t.status === 'out'}
+                    onClick={() => onAnswer(t.id, t.status === 'out' ? 'in' : 'out')}
+                    label={t.status === 'out' ? 'Doch dabei' : 'Abmelden'}
+                  />
                 )}
-              </div>
-              {!t.cancelled &&
-                (t.status === 'out' ? (
-                  <button
-                    type="button"
-                    onClick={() => onAnswer(t.id, 'in')}
-                    class="min-h-11 rounded border-2 border-jersey bg-white px-3.5 text-base font-semibold text-jersey"
-                  >
-                    Doch dabei
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => onAnswer(t.id, 'out')}
-                    class="min-h-11 rounded border-2 border-pill bg-white px-3.5 text-base font-semibold text-ink"
-                  >
-                    Abmelden
-                  </button>
-                ))}
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
   );
 }
 
