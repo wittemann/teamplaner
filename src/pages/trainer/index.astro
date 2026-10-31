@@ -1,7 +1,8 @@
 ---
 // Coach overview of one team (mockup: Trainer-Uebersicht.dc.html): how many children confirmed
 // the season, the next game and training, the season matrix, late changes, which children's
-// families have no notifications, a WhatsApp text and the reminder plan.
+// families have no notifications, a WhatsApp text and the reminder plan. The reminder form posts
+// to this page: a mail to every family with open games (lib/reminders.ts, mode "all").
 import { CRON_SECRET, LINK_KEY, VAPID_PUBLIC_KEY } from 'astro:env/server';
 import PushSetup from '../../components/PushSetup.tsx';
 import Base from '../../layouts/Base.astro';
@@ -18,7 +19,8 @@ import { getDb } from '../../lib/db/index.ts';
 import { shortDate, time, weekday } from '../../lib/format.ts';
 import { rememberLink } from '../../lib/lost-link.ts';
 import { playersWithoutPush } from '../../lib/push.ts';
-import { teamReminderPlan } from '../../lib/reminders.ts';
+import { sendMail } from '../../lib/mail.ts';
+import { sendReminders, teamReminderPlan } from '../../lib/reminders.ts';
 import { needsAnswer } from '../../lib/season.ts';
 
 const { coach } = Astro.locals;
@@ -28,6 +30,22 @@ const db = await getDb();
 const coachToken = Astro.cookies.get(COACH_COOKIE)?.value;
 if (coach && coachToken) await rememberLink(db, 'coach', coach.id, coachToken, LINK_KEY);
 const teams = coach ? await coachTeams(db, coach) : [];
+
+if (Astro.request.method === 'POST' && coach) {
+  const form = await Astro.request.formData();
+  const teamId = String(form.get('team') ?? '');
+  if (!teams.some((t) => t.id === teamId))
+    return new Response('Team nicht gefunden', { status: 404 });
+  const results = await sendReminders(
+    db,
+    { mode: 'all', teamId },
+    { origin: Astro.url.origin, key: LINK_KEY, send: sendMail },
+  );
+  const sent = results.filter((r) => r.sent).length;
+  const failed = results.filter((r) => r.error).length;
+  return Astro.redirect(`/trainer?team=${teamId}&erinnert=${sent}&fehler=${failed}`);
+}
+
 const team = teams.find((t) => t.id === Astro.url.searchParams.get('team')) ?? teams[0];
 const data = team ? await teamOverview(db, team.id) : undefined;
 const noPush = team ? await playersWithoutPush(db, team.id) : new Set<string>();
@@ -50,6 +68,18 @@ const late = answers
   }));
 const withoutPush = players.filter((p) => noPush.has(p.id));
 const waText = team && seasonWhatsAppText(team.name, team.season, players.length - confirmed);
+const openPlayers = players.length - confirmed;
+const reminded = Astro.url.searchParams.get('erinnert');
+const remindFailed = Number(Astro.url.searchParams.get('fehler') ?? 0);
+const parents = (n: number) => (n === 1 ? 'einen Elternteil' : `${n} Eltern`);
+const remindNotice =
+  reminded === null
+    ? undefined
+    : Number(reminded) > 0
+      ? `Erinnerung per Mail an ${parents(Number(reminded))} verschickt.`
+      : remindFailed
+        ? undefined
+        : 'Niemand zu erinnern – alle offenen Familien haben in den letzten 20 Stunden schon eine Erinnerung bekommen.';
 
 // "vs. Heidelberg" → "Heidelberg", "bei Mannheim" → "@ Mannheim": short column heads
 const short = (title: string) => title.replace(/^vs\. /, '').replace(/^bei /, '@ ');
@@ -115,6 +145,23 @@ const LABEL = { in: 'dabei', out: 'nicht dabei', open: 'offen' } as const;
       <div class="flex flex-col gap-8 px-4 py-6 md:px-8">
         {VAPID_PUBLIC_KEY && (
           <PushSetup client:load as="coach" publicKey={VAPID_PUBLIC_KEY} class="md:max-w-xl" />
+        )}
+        {remindNotice && (
+          <p
+            role="status"
+            class="rounded-md bg-success-bg px-4 py-3 font-semibold text-ink md:max-w-xl"
+          >
+            {remindNotice}
+          </p>
+        )}
+        {remindFailed > 0 && (
+          <p
+            role="alert"
+            class="rounded-md bg-note-bg px-4 py-3 font-semibold text-ink md:max-w-xl"
+          >
+            {remindFailed === 1 ? 'Eine Mail' : `${remindFailed} Mails`} konnten nicht verschickt
+            werden. Bitte später noch einmal versuchen.
+          </p>
         )}
         <div class="grid gap-3 md:grid-cols-3">
           <div class="flex flex-col gap-1 rounded-md border border-line p-4">
@@ -273,6 +320,30 @@ const LABEL = { in: 'dabei', out: 'nicht dabei', open: 'offen' } as const;
             Reagiert ein Elternteil nicht, geht die nächste Erinnerung an alle Eltern des Kindes.
             {!CRON_SECRET && ' Noch nicht eingeschaltet: Geplantes geht erst nach dem Start raus.'}
           </p>
+          {openPlayers > 0 && (
+            <details class="mb-4 md:max-w-3xl">
+              <summary class="inline-flex min-h-12 cursor-pointer list-none [&::-webkit-details-marker]:hidden items-center rounded bg-rust px-5 font-condensed text-lg font-semibold tracking-[0.04em] text-white uppercase hover:bg-rust-dark">
+                Erinnerung an {openPlayers} {openPlayers === 1 ? 'Offenen' : 'Offene'}
+              </summary>
+              <form
+                method="post"
+                class="mt-2 flex flex-col gap-3 rounded-md border border-line bg-white p-4"
+              >
+                <input type="hidden" name="team" value={team.id} />
+                <p class="text-[15px]">
+                  Jetzt eine Mail an die Familien mit offenen Spielen – mit allen offenen Spielen
+                  und Knöpfen zum Antworten. Wer in den letzten 20 Stunden schon eine Erinnerung
+                  bekommen hat, wird übersprungen.
+                </p>
+                <button
+                  type="submit"
+                  class="min-h-11 self-start rounded bg-rust px-4 font-condensed text-lg font-semibold tracking-[0.04em] text-white uppercase hover:bg-rust-dark"
+                >
+                  Jetzt verschicken
+                </button>
+              </form>
+            </details>
+          )}
           <ol class="border-t border-line md:max-w-3xl">
             {reminderPlan.map((r) => (
               <li class="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-line py-3">

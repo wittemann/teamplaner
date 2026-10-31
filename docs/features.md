@@ -59,7 +59,7 @@ Für Spiele dagegen **ausdrückliche** Zusage zu Saisonbeginn (keine Antwort = o
 - [x] Übersicht pro Termin: dabei / nicht dabei / offen, mit Ampel (Mindestzahl)
 - [x] Saison-Matrix: Kinder × Termine
 - [x] Bei Änderung nach dem Stichtag sofort Push an die Trainer, ohne Gerät per Mail
-- [ ] Erinnerung an die Offenen (automatisch per Mail und über Claude erledigt; Knopf im Trainerbereich fehlt)
+- [x] Erinnerung an die Offenen (automatisch per Mail, über Claude und per Knopf im Trainerbereich)
 - [x] Hinweis am Termin (für alle sichtbar, Push an die Zugesagten)
 - [x] Sehen, welche Familien keine Push-Benachrichtigungen aktiviert haben (Übersicht, „Ohne Benachrichtigung“)
 - [x] „In WhatsApp teilen“ mit fertigem Text + Link (Saisonstart, Erinnerung, Hinweis)
