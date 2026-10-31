@@ -56,11 +56,13 @@ Ziel: Claude kann alles, was ein Trainer kann – z. B.
 
 **Entschieden (2026-10-29): E-Mail + Web Push + „In WhatsApp teilen“.**
 
-| Anlass                                          | An                                                                                  | Kanal            |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------- | ---------------- |
-| Saison freigeschaltet / Erinnerung „noch offen“ | offene Familien                                                                     | Push, sonst Mail |
-| Hinweis am Termin („Treffpunkt geändert“)       | sichtbar für alle Familien des Teams; **Push** an Familien, deren Kind zugesagt hat | Push             |
-| Änderung nach Stichtag                          | Trainer                                                                             | Push, sonst Mail |
+| Anlass                                          | An                                                                                  | Kanal                                        |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
+| Saison freigeschaltet / Erinnerung „noch offen“ | offene Familien                                                                     | Push, sonst Mail                             |
+| Hinweis am Termin („Treffpunkt geändert“)       | sichtbar für alle Familien des Teams; **Push** an Familien, deren Kind zugesagt hat | Push                                         |
+| Änderung nach Stichtag                          | Trainer                                                                             | Push, sonst Mail                             |
+| Termin abgesagt / Absage zurückgenommen         | Familien, deren Kind dabei ist (Training: nicht abgemeldet)                         | Push                                         |
+| Termin verlegt (Tag, Zeit, Treffpunkt, Ort)     | Familien, deren Kind dabei ist                                                      | Push; Spiele: sonst Mail mit Antwort-Knöpfen |
 
 Keine Spieltag-Erinnerung („Stimmt noch?“) – nicht gewünscht.
 
@@ -88,6 +90,9 @@ Umsetzung (2026-10-31):
 - Hinweis am Termin: nur wenn neu oder geändert, an Familien mit Zusage (Training: nicht abgemeldet).
   Keine Mail – der Hinweis steht auf der Seite; der Trainer sieht, wie viele ihn nicht bekommen.
 - Späte Änderung: Push an den Trainer; Mail nur, wenn kein Gerät sie bekommen hat.
+- Absage / zurückgenommene Absage im Trainerbereich: Push an die Familien, die dabei sind. Verlegung:
+  ebenso; bei Spielen bekommt jeder Elternteil mit Zusage, den kein Push erreicht hat, die Mail
+  „passt es noch?“. Änderungen über die Admin-API benachrichtigen niemanden.
 - Erinnerungen „noch offen“ gehen weiterhin nur per Mail (mit Antwort-Knöpfen).
 - `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (Vercel); ohne sie bietet die Seite keine
   Benachrichtigungen an und alles geht per Mail. Schlüssel nie wechseln – sonst müssen sich alle

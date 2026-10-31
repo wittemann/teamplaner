@@ -5,6 +5,7 @@ import { eventDetail, type CoachEvent } from './coach.ts';
 import type { Db } from './db/client.ts';
 import { createTestDb, insert } from './db/test-db.ts';
 import { confirmedFamilies, isMoved, movedMail, notifyMoved } from './event-change.ts';
+import { saveSubscription } from './push.ts';
 import type { Mail } from './mail.ts';
 import { hashToken, sealToken } from './token.ts';
 
@@ -116,7 +117,7 @@ describe('notifyMoved', () => {
         mails.push(mail);
       },
     });
-    expect(result).toEqual({ sent: 2, failed: 0 });
+    expect(result).toEqual({ pushed: 0, sent: 2, failed: 0 });
     expect(mails.map((m) => m.to)).toEqual(['anna@example.org', 'bernd@example.org']);
   });
 
@@ -148,6 +149,31 @@ describe('notifyMoved', () => {
         throw Object.assign(new Error('nope'), { code: 'EAUTH' });
       },
     });
-    expect(result).toEqual({ sent: 0, failed: 2 });
+    expect(result).toEqual({ pushed: 0, sent: 0, failed: 2 });
+  });
+
+  it('pushes first and mails only the parents the push did not reach', async () => {
+    await saveSubscription(
+      db,
+      { guardianId: anna },
+      { endpoint: 'https://push.example/anna', keys: { p256dh: 'p', auth: 'a' } },
+      null,
+    );
+    const mails: Mail[] = [];
+    const payloads: string[] = [];
+    const event = (await eventDetail(db, eventId))!.event;
+    const result = await notifyMoved(db, event, 'Schüler', {
+      origin: ORIGIN,
+      key: KEY,
+      send: async (mail) => {
+        mails.push(mail);
+      },
+      push: async (_, payload) => {
+        payloads.push(payload);
+      },
+    });
+    expect(result).toEqual({ pushed: 1, sent: 1, failed: 0 });
+    expect(mails.map((m) => m.to)).toEqual(['bernd@example.org']);
+    expect(JSON.parse(payloads[0]).title).toBe('Geändert: vs. Karlsruhe');
   });
 });

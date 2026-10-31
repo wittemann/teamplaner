@@ -1,6 +1,7 @@
 ---
-// "Termin bearbeiten" (mockup: Trainer-Termin.dc.html): change day, times, place, deadline. If a
-// game moves, families with a "Dabei" get a mail (lib/event-change.ts).
+// "Termin bearbeiten" (mockup: Trainer-Termin.dc.html): change day, times, place, deadline. If the
+// event moves, the families taking part get a push, for games a mail if no push reached them
+// (lib/event-change.ts).
 import { LINK_KEY } from 'astro:env/server';
 import EventForm from '../../../../components/EventForm.astro';
 import Base from '../../../../layouts/Base.astro';
@@ -8,7 +9,7 @@ import { applyAbsencesToEvents } from '../../../../lib/absence.ts';
 import { updateEvent } from '../../../../lib/admin/data.ts';
 import { canSeeTeam, coachTeams, eventDetail } from '../../../../lib/coach.ts';
 import { getDb } from '../../../../lib/db/index.ts';
-import { isMoved, notifyMoved } from '../../../../lib/event-change.ts';
+import { isRescheduled, notifyMoved } from '../../../../lib/event-change.ts';
 import {
   eventFormValues,
   parseEventForm,
@@ -16,6 +17,7 @@ import {
   type EventFormValues,
 } from '../../../../lib/event-form.ts';
 import { sendMail } from '../../../../lib/mail.ts';
+import { pushSender } from '../../../../lib/push-sender.ts';
 
 const { coach } = Astro.locals;
 if (!coach) return Astro.redirect('/trainer');
@@ -40,13 +42,14 @@ if (Astro.request.method === 'POST') {
     // A new day can fall into an entered absence
     if (after.startsAt !== before.startsAt) await applyAbsencesToEvents(db, [id]);
     let mailed = '';
-    if (isMoved(before, after)) {
-      const { sent, failed } = await notifyMoved(db, after, team?.name ?? '', {
+    if (isRescheduled(before, after)) {
+      const { pushed, sent, failed } = await notifyMoved(db, after, team?.name ?? '', {
         origin: Astro.url.origin,
         key: LINK_KEY,
         send: sendMail,
+        push: pushSender(),
       });
-      mailed = `&informiert=${sent}${failed ? `&fehler=${failed}` : ''}`;
+      mailed = `&push=${pushed}&informiert=${sent}${failed ? `&fehler=${failed}` : ''}`;
     }
     return Astro.redirect(`/trainer/termin/${id}?geaendert=1${mailed}`);
   }
@@ -62,8 +65,9 @@ if (Astro.request.method === 'POST') {
     </a>
     <h1 class="heading mt-4 text-4xl leading-tight md:text-5xl">Termin bearbeiten</h1>
     <p class="mt-2 text-[15px]">
-      Wird ein Spiel verlegt (Tag, Uhrzeit, Treffpunkt oder Ort), bekommen die Familien mit Zusage
-      eine Mail und können absagen, falls es nicht mehr passt.
+      Wird ein Termin verlegt (Tag, Uhrzeit, Treffpunkt oder Ort), bekommen die Familien, die dabei
+      sind, eine Benachrichtigung. Bei Spielen geht an alle ohne Benachrichtigung eine Mail, mit der
+      sie absagen können, falls es nicht mehr passt.
     </p>
   </div>
   <div class="px-4 py-6 md:px-8">

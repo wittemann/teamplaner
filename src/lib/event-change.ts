@@ -1,6 +1,7 @@
-// Coaches change dates in the coach area (docs/features.md, "Trainer"). When a game moves – other
-// day, time, meeting time or place – families whose child said "Dabei" get a mail with
-// "passt es noch?" buttons (lib/answer-link.ts), so a changed plan doesn't go unnoticed.
+// Coaches change dates in the coach area (docs/features.md, "Trainer"). When an event moves – other
+// day, time, meeting time or place – the families taking part get a push. For games, families the
+// push didn't reach get a mail with "passt es noch?" buttons (lib/answer-link.ts) instead, so a
+// changed plan doesn't go unnoticed.
 import { answerUrl } from './answer-link.ts';
 import type { CoachEvent } from './coach.ts';
 import type { Db } from './db/client.ts';
@@ -14,18 +15,24 @@ import {
   smallPrint,
 } from './mail-html.ts';
 import type { Mail } from './mail.ts';
+import { pushEventNews, type PushSender } from './push.ts';
 import { needsAnswer } from './season.ts';
 
 type Moved = Pick<CoachEvent, 'type' | 'startsAt' | 'meetAt' | 'locationName' | 'cancelled'>;
 
-/** A game the families have to hear about: still on, and day, time or place changed. */
-export function isMoved(before: Moved, after: Moved, now = new Date()) {
-  if (!needsAnswer(after.type) || after.cancelled || new Date(after.startsAt) <= now) return false;
+/** An event the families have to hear about: still on, and day, time or place changed. */
+export function isRescheduled(before: Moved, after: Moved, now = new Date()) {
+  if (after.cancelled || new Date(after.startsAt) <= now) return false;
   return (
     before.startsAt !== after.startsAt ||
     before.meetAt !== after.meetAt ||
     (before.locationName ?? '') !== (after.locationName ?? '')
   );
+}
+
+/** A moved game: families also get the mail with answer buttons */
+export function isMoved(before: Moved, after: Moved, now = new Date()) {
+  return needsAnswer(after.type) && isRescheduled(before, after, now);
 }
 
 export type MovedRecipient = {
@@ -152,16 +159,32 @@ export function movedMail(
   } satisfies Mail;
 }
 
-/** Mails every family with a "Dabei" for the event. A failing mail doesn't stop the others. */
+/**
+ * Pushes the new plan to the families taking part; for a game, every family with a "Dabei" the
+ * push didn't reach gets the mail. A failing mail doesn't stop the others.
+ */
 export async function notifyMoved(
   db: Db,
   event: CoachEvent,
   teamName: string,
-  deps: { origin: string; key: string | undefined; send: (mail: Mail) => Promise<void> },
+  deps: {
+    origin: string;
+    key: string | undefined;
+    send: (mail: Mail) => Promise<void>;
+    push?: PushSender;
+  },
 ) {
+  const { reachedIds, reached } = await pushEventNews(
+    db,
+    event.id,
+    { title: `Geändert: ${event.title}`, body: when(event), tag: `event-${event.id}` },
+    deps.push,
+  );
   let sent = 0;
   let failed = 0;
-  for (const family of await confirmedFamilies(db, event.id)) {
+  const families = needsAnswer(event.type) ? await confirmedFamilies(db, event.id) : [];
+  for (const family of families) {
+    if (reachedIds.has(`guardian:${family.guardianId}`)) continue;
     try {
       await deps.send(movedMail(family, event, teamName, deps.origin, deps.key));
       sent++;
@@ -171,5 +194,5 @@ export async function notifyMoved(
       console.error('moved game: mail failed', (error as { code?: string }).code ?? 'unknown');
     }
   }
-  return { sent, failed };
+  return { pushed: reached, sent, failed };
 }

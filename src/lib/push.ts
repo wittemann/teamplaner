@@ -131,37 +131,70 @@ export async function playersWithoutPush(db: Db, teamId: string) {
   return new Set(rows.map((r) => r.id));
 }
 
-/** Families whose child takes part: games = said yes, trainings = didn't opt out. */
-async function guardiansTakingPart(db: Db, eventId: string) {
+/**
+ * Families whose child takes part: games = said yes, trainings = didn't opt out. A cancelled event
+ * counts only for the news that it was cancelled.
+ */
+async function guardiansTakingPart(db: Db, eventId: string, includeCancelled: boolean) {
   return db.query<{ id: string }>(
     `SELECT DISTINCT g.guardian_id AS id
        FROM event e
        JOIN team_member m ON m.team_id = e.team_id AND m.active
        JOIN guardianship g ON g.player_id = m.player_id
        LEFT JOIN response r ON r.event_id = e.id AND r.player_id = m.player_id
-      WHERE e.id = $1 AND NOT e.cancelled AND e.starts_at > now()
+      WHERE e.id = $1 AND ($2 OR NOT e.cancelled) AND e.starts_at > now()
         AND (r.status = 'in' OR (e.type = 'training' AND r.status IS NULL))`,
-    [eventId],
+    [eventId, includeCancelled],
   );
 }
 
 /**
- * The coach note as a push to the families taking part (docs/tech.md: push only, no mail – the
- * note is on the page for everyone). Returns how many families got it and how many have no device.
+ * News about one event as a push to the families taking part. Returns who got it, and how many
+ * families have no device for it.
  */
-export async function pushCoachNote(
+export async function pushEventNews(
   db: Db,
-  event: { id: string; title: string; startsAt: string },
+  eventId: string,
+  message: Omit<PushMessage, 'url'>,
+  send: PushSender | undefined,
+  { includeCancelled = false } = {},
+) {
+  const guardians = (await guardiansTakingPart(db, eventId, includeCancelled)).map((g) => g.id);
+  const reached = await pushTo(db, { guardianIds: guardians }, { url: '/', ...message }, send);
+  return { reachedIds: reached, reached: reached.size, missed: guardians.length - reached.size };
+}
+
+/** The coach note (docs/tech.md: push only, no mail – the note is on the page for everyone). */
+export function pushCoachNote(
+  db: Db,
+  event: { id: string; title: string },
   note: string,
   when: string,
   send: PushSender | undefined,
 ) {
-  const guardians = (await guardiansTakingPart(db, event.id)).map((g) => g.id);
-  const reached = await pushTo(
+  return pushEventNews(
     db,
-    { guardianIds: guardians },
-    { title: `Hinweis: ${event.title} (${when})`, body: note, url: '/', tag: `note-${event.id}` },
+    event.id,
+    { title: `Hinweis: ${event.title} (${when})`, body: note, tag: `note-${event.id}` },
     send,
   );
-  return { reached: reached.size, missed: guardians.length - reached.size };
+}
+
+/** Cancelled, or taken back: "Fällt aus" / "Findet doch statt" */
+export function pushCancelled(
+  db: Db,
+  event: { id: string; title: string; startsAt: string; cancelled: boolean },
+  reason: string | null,
+  when: string,
+  send: PushSender | undefined,
+) {
+  const message = event.cancelled
+    ? { title: `Fällt aus: ${event.title} (${when})`, body: reason || 'Der Termin fällt aus.' }
+    : {
+        title: `Findet doch statt: ${event.title} (${when})`,
+        body: 'Die Absage ist zurückgenommen.',
+      };
+  return pushEventNews(db, event.id, { ...message, tag: `event-${event.id}` }, send, {
+    includeCancelled: true,
+  });
 }

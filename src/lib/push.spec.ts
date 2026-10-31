@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Db } from './db/client.ts';
 import { createTestDb, insert } from './db/test-db.ts';
-import { playersWithoutPush, pushCoachNote, saveSubscription, type Subscription } from './push.ts';
+import {
+  playersWithoutPush,
+  pushCancelled,
+  pushCoachNote,
+  saveSubscription,
+  type Subscription,
+} from './push.ts';
 
 const device = (name: string) =>
   ({
@@ -80,7 +86,7 @@ describe('push', () => {
       `INSERT INTO response (event_id, player_id, status, responded_by) VALUES ($1, $2, 'in', 'x')`,
       [game.id, ella],
     );
-    expect(await pushCoachNote(db, game, 'Weiße Hosen', 'Sa 17.05.', send)).toEqual({
+    expect(await pushCoachNote(db, game, 'Weiße Hosen', 'Sa 17.05.', send)).toMatchObject({
       reached: 1,
       missed: 0,
     });
@@ -100,6 +106,24 @@ describe('push', () => {
   it('sends nothing for a cancelled event', async () => {
     await pushCoachNote(db, await event('training', true), 'x', 'x', send);
     expect(sent).toEqual([]);
+  });
+
+  it('tells the families taking part that a training is cancelled', async () => {
+    const training = await event('training', true);
+    const result = await pushCancelled(
+      db,
+      { ...training, cancelled: true },
+      'Platz gesperrt',
+      'Di 13.05.',
+      async (subscription, payload) => {
+        sent.push(subscription.endpoint);
+        expect(JSON.parse(payload)).toMatchObject({
+          title: 'Fällt aus: vs. Karlsruhe (Di 13.05.)',
+          body: 'Platz gesperrt',
+        });
+      },
+    );
+    expect(result).toMatchObject({ reached: 2, missed: 0 });
   });
 
   it('moves a device to the family that signs up on it last', async () => {

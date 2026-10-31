@@ -9,7 +9,7 @@ import { canSeeTeam, coachTeams, eventDetail, setCoachNote } from '../../../lib/
 import { updateEvent } from '../../../lib/admin/data.ts';
 import { getDb } from '../../../lib/db/index.ts';
 import { deadline, longDate, shortDate, time, weekday } from '../../../lib/format.ts';
-import { pushCoachNote } from '../../../lib/push.ts';
+import { pushCancelled, pushCoachNote } from '../../../lib/push.ts';
 import { pushSender } from '../../../lib/push-sender.ts';
 import { needsAnswer } from '../../../lib/season.ts';
 
@@ -33,11 +33,25 @@ if (Astro.request.method === 'POST') {
       .trim()
       .slice(0, 200);
     await updateEvent(db, id, { cancelled: true, cancelReason: reason || null });
-    return Astro.redirect(`/trainer/termin/${id}?abgesagt=1`);
+    const { reached, missed } = await pushCancelled(
+      db,
+      { ...detail.event, cancelled: true },
+      reason || null,
+      `${weekday(detail.event.startsAt)} ${shortDate(detail.event.startsAt)}`,
+      pushSender(),
+    );
+    return Astro.redirect(`/trainer/termin/${id}?abgesagt=1&push=${reached}&ohne=${missed}`);
   }
   if (intent === 'uncancel') {
     await updateEvent(db, id, { cancelled: false, cancelReason: null });
-    return Astro.redirect(`/trainer/termin/${id}?wieder=1`);
+    const { reached, missed } = await pushCancelled(
+      db,
+      { ...detail.event, cancelled: false },
+      null,
+      `${weekday(detail.event.startsAt)} ${shortDate(detail.event.startsAt)}`,
+      pushSender(),
+    );
+    return Astro.redirect(`/trainer/termin/${id}?wieder=1&push=${reached}&ohne=${missed}`);
   }
   const note = String(form.get('note') ?? '').trim();
   await setCoachNote(db, id, note || null);
@@ -55,14 +69,20 @@ const withoutPush = Number(params.get('ohne') ?? 0);
 const families = (n: number) => (n === 1 ? 'eine Familie' : `${n} Familien`);
 const informed = Number(params.get('informiert') ?? 0);
 const mailFailed = Number(params.get('fehler') ?? 0);
+// "Eine Familie wurde" / "3 Familien wurden"
+const were = (n: number) => (n === 1 ? 'Eine Familie wurde' : `${n} Familien wurden`);
+const pushInfo = pushed ? ` ${were(pushed)} per Benachrichtigung informiert.` : '';
+const shareHint = withoutPush
+  ? ` ${withoutPush === 1 ? 'Eine Familie hat' : `${withoutPush} Familien haben`} keine Benachrichtigungen – am besten auch in der WhatsApp-Gruppe teilen.`
+  : '';
 const notice = params.has('angelegt')
   ? 'Termin angelegt.'
   : params.has('geaendert')
-    ? `Änderung gespeichert.${informed ? ` ${informed === 1 ? 'Eine Familie mit Zusage wurde' : `${informed} Familien mit Zusage wurden`} per Mail informiert.` : ''}`
+    ? `Änderung gespeichert.${pushInfo}${informed ? ` ${were(informed)} per Mail informiert.` : ''}`
     : params.has('abgesagt')
-      ? 'Termin abgesagt. Familien sehen „Fällt aus“ – teile es am besten auch in der WhatsApp-Gruppe.'
+      ? `Termin abgesagt. Familien sehen „Fällt aus“.${pushInfo}${shareHint}`
       : params.has('wieder')
-        ? 'Absage zurückgenommen.'
+        ? `Absage zurückgenommen.${pushInfo}${shareHint}`
         : undefined;
 
 const { event, players, answers, phones } = detail;

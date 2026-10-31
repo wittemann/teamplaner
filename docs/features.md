@@ -47,7 +47,7 @@ Für Spiele dagegen **ausdrückliche** Zusage zu Saisonbeginn (keine Antwort = o
 - Eltern ändern jederzeit über denselben Link – auch nach dem Stichtag; dann wird der Trainer benachrichtigt.
 - Trainer hinterlegt bei Bedarf einen **Hinweis am Termin** („Treffpunkt geändert“, „weiße Trikots“).
 - Für die WhatsApp-Gruppe gibt es einen **fertigen Text mit Link** und den Knopf **„In WhatsApp teilen“**: öffnet WhatsApp mit dem Text, Trainer wählt die Gruppe und sendet.
-- Spielverlegung: Trainer ändert den Termin (oder Claude prüft das BSM auf Änderungen) → Familien mit Zusage werden informiert.
+- Spielverlegung: Trainer ändert den Termin (oder Claude prüft das BSM auf Änderungen) → Familien mit Zusage werden informiert (Push, sonst Mail). Absagen und verlegte Trainings gehen als Push an alle, die dabei sind.
 
 ## MVP
 
