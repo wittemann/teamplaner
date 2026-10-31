@@ -1,0 +1,64 @@
+---
+// "Termin anlegen" (mockup: Trainer-Uebersicht.dc.html): tournaments, friendly games, extra
+// trainings. League games come from the BSM once a season, through Claude.
+import EventForm from '../../../components/EventForm.astro';
+import Base from '../../../layouts/Base.astro';
+import { createEvents } from '../../../lib/admin/data.ts';
+import { canSeeTeam, coachTeams } from '../../../lib/coach.ts';
+import { getDb } from '../../../lib/db/index.ts';
+import {
+  emptyEventForm,
+  parseEventForm,
+  type EventFormErrors,
+  type EventFormValues,
+} from '../../../lib/event-form.ts';
+
+const { coach } = Astro.locals;
+if (!coach) return Astro.redirect('/trainer');
+
+const db = await getDb();
+const teams = await coachTeams(db, coach);
+const team = teams.find((t) => t.id === Astro.url.searchParams.get('team')) ?? teams[0];
+if (!team || !canSeeTeam(coach, teams, team.id)) {
+  return new Response('Team nicht gefunden', { status: 404 });
+}
+
+let values: EventFormValues = emptyEventForm('tournament');
+let errors: EventFormErrors = {};
+if (Astro.request.method === 'POST') {
+  const result = parseEventForm(await Astro.request.formData(), 'tournament', true);
+  if (result.ok) {
+    const { created } = await createEvents(db, { teamId: team.id, events: [result.fields] });
+    return Astro.redirect(`/trainer/termin/${created[0]}?angelegt=1`);
+  }
+  values = result.values;
+  errors = result.errors;
+}
+---
+
+<Base title={`Termin anlegen · ${team.name}`} who={`Trainerbereich · ${coach.name}`} wide>
+  <div class="border-b border-line bg-chalk px-4 pt-5 pb-6 md:px-8">
+    <a href={`/trainer?team=${team.id}`} class="font-semibold">
+      ← Übersicht {team.name}
+    </a>
+    <h1 class="heading mt-4 text-4xl leading-tight md:text-5xl">Termin anlegen</h1>
+    <p class="mt-2 text-[15px]">
+      Für {team.name} {team.season}. Ligaspiele kommen einmal pro Saison aus dem BSM – hier also
+      Turniere, Freundschaftsspiele oder ein zusätzliches Training.
+    </p>
+  </div>
+  <div class="px-4 py-6 md:px-8">
+    {Object.keys(errors).length > 0 && (
+      <p role="alert" class="mb-4 rounded-md bg-note-bg p-4 font-semibold text-rust-dark">
+        Bitte die markierten Felder prüfen.
+      </p>
+    )}
+    <EventForm
+      values={values}
+      errors={errors}
+      chooseType={true}
+      submitLabel="Anlegen"
+      cancelHref={`/trainer?team=${team.id}`}
+    />
+  </div>
+</Base>

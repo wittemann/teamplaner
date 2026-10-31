@@ -41,6 +41,16 @@ export function answerToken(answer: Answer, accessTokenHash: string, key: string
   return `${payload.toString('base64url')}.${signature(payload, accessTokenHash, key).toString('base64url')}`;
 }
 
+/** Absolute link for a button; undefined without a key (the mail then has no buttons). */
+export function answerUrl(
+  origin: string,
+  answer: Answer,
+  accessTokenHash: string,
+  key: string | undefined,
+) {
+  return key && new URL(`/antwort/${answerToken(answer, accessTokenHash, key)}`, origin).href;
+}
+
 function parse(token: string) {
   const [payloadText, signatureText] = token.split('.');
   if (!payloadText || !signatureText) return undefined;

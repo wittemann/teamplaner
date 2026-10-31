@@ -53,23 +53,23 @@ Für Spiele dagegen **ausdrückliche** Zusage zu Saisonbeginn (keine Antwort = o
 
 ### Trainer
 
-- [ ] Termine anlegen und bearbeiten (Spiele kommen einmal pro Saison per Claude aus dem BSM; Turniere, Freundschaftsspiele von Hand)
-- [ ] Trainings als Serie (z. B. Di + Do 17:30), einzelne absagen
-- [ ] Termin: Typ, Datum, Treffpunkt + Uhrzeit, Beginn, Ort (Maps-Link), Gegner, Heim/Auswärts
-- [ ] Übersicht pro Termin: dabei / nicht dabei / offen, mit Ampel (Mindestzahl)
-- [ ] Saison-Matrix: Kinder × Termine
+- [x] Termine anlegen und bearbeiten (Spiele kommen einmal pro Saison per Claude aus dem BSM; Turniere, Freundschaftsspiele von Hand) – verlegtes Spiel → Mail an Familien mit Zusage
+- [ ] Trainings als Serie (z. B. Di + Do 17:30), einzelne absagen – Absagen geht, Serien legt vorerst Claude an
+- [x] Termin: Typ, Datum, Treffpunkt + Uhrzeit, Beginn, Ort (Maps-Link), Gegner (im Titel), Heim/Auswärts
+- [x] Übersicht pro Termin: dabei / nicht dabei / offen, mit Ampel (Mindestzahl)
+- [x] Saison-Matrix: Kinder × Termine
 - [ ] Erinnerung an die Offenen (automatisch per Mail und über Claude erledigt; Knopf im Trainerbereich fehlt)
-- [ ] Hinweis am Termin (für alle sichtbar, Push an die Zugesagten)
+- [ ] Hinweis am Termin (für alle sichtbar, Push an die Zugesagten) – sichtbar ja, Push fehlt
 - [ ] Sehen, welche Familien keine Push-Benachrichtigungen aktiviert haben
-- [ ] „In WhatsApp teilen“ mit fertigem Text + Link (Saisonstart, Erinnerung, Hinweis)
+- [x] „In WhatsApp teilen“ mit fertigem Text + Link (Saisonstart, Erinnerung, Hinweis)
 - [ ] Automatischer Erinnerungsplan sichtbar (was wurde wann an wen geschickt, was ist geplant)
-- [ ] Persönlicher Anstoß: WhatsApp-Chat mit einer offenen Familie öffnen (nur wenn Telefonnummer hinterlegt)
+- [x] Persönlicher Anstoß: WhatsApp-Chat mit einer offenen Familie öffnen (nur wenn Telefonnummer hinterlegt)
 
 ### Eltern
 
-- [ ] Persönlicher Link, kein Login
-- [ ] Saisonansicht aller eigenen Kinder, „Bei allen dabei“, Ausnahmen, Abwesenheitszeitraum
-- [ ] Bei jedem Spiel: Teamzahl („Noch 2 Zusagen bis 9“) und Stichtag
+- [x] Persönlicher Link, kein Login
+- [x] Saisonansicht aller eigenen Kinder, „Bei allen dabei“, Ausnahmen, Abwesenheitszeitraum
+- [x] Bei jedem Spiel: Teamzahl („Noch 2 Zusagen bis 9“) und Stichtag
 - [x] Schulferien-Frage („Seid ihr in den Pfingstferien weg?“), Ferien als Schnellauswahl bei Abwesenheit
 - [x] Antworten direkt aus der Erinnerungs-Mail (`/antwort/<token>`)
 - [x] „Link verloren?“ – Link per E-Mail noch einmal anfordern (`/link`)

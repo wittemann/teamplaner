@@ -3,6 +3,7 @@
 // The page always answers the same, whether the address is known or not.
 import { rotateToken } from './admin/data.ts';
 import type { Db } from './db/client.ts';
+import { escapeHtml } from './mail-html.ts';
 import { openToken, sealToken } from './token.ts';
 
 export type LinkOwner = 'guardian' | 'coach';
@@ -56,14 +57,6 @@ export async function linksToMail(
     }
   }
   return links;
-}
-
-function escapeHtml(text: string) {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 /** The mail with the links, as plain text and HTML. */

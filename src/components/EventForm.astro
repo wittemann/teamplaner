@@ -1,0 +1,192 @@
+---
+// Fields of a date for coaches (lib/event-form.ts), used by "Termin anlegen" and "Termin bearbeiten".
+// A plain form: works without JavaScript; fields that don't apply to the type stay visible but say so.
+import { EVENT_TYPES, type EventFormErrors, type EventFormValues } from '../lib/event-form.ts';
+
+type Props = {
+  values: EventFormValues;
+  errors?: EventFormErrors;
+  /** New dates choose their type; an existing date keeps it */
+  chooseType: boolean;
+  submitLabel: string;
+  cancelHref: string;
+};
+
+const { values, errors = {}, chooseType, submitLabel, cancelHref } = Astro.props;
+const isTraining = values.type === 'training';
+const field =
+  'min-h-12 rounded border-2 border-pill px-3 text-ink focus:border-jersey focus:outline-none';
+const label = 'flex flex-col gap-1 font-semibold text-ink';
+---
+
+<form method="post" class="flex flex-col gap-5" novalidate>
+  {chooseType && (
+    <fieldset class="flex flex-col gap-2">
+      <legend class="mb-1 font-semibold text-ink">Art</legend>
+      <div class="flex flex-wrap gap-2">
+        {Object.entries(EVENT_TYPES).map(([type, name]) => (
+          <label class="flex min-h-11 cursor-pointer items-center gap-2 rounded-full border-2 border-pill px-4 has-checked:border-forest has-checked:bg-forest has-checked:text-white">
+            <input
+              type="radio"
+              name="type"
+              value={type}
+              checked={values.type === type}
+              class="sr-only"
+            />
+            {name}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  )}
+
+  <label class={label}>
+    Titel
+    <input
+      name="title"
+      value={values.title}
+      required
+      maxlength="120"
+      placeholder="vs. Heidelberg"
+      class={field}
+      aria-invalid={errors.title ? 'true' : undefined}
+    />
+    {errors.title && <span class="font-normal text-rust">{errors.title}</span>}
+  </label>
+
+  {(chooseType || values.type === 'game') && (
+    <fieldset class="flex flex-col gap-2">
+      <legend class="mb-1 font-semibold text-ink">
+        Heim / Auswärts <span class="font-normal text-text-light">(nur Spiele)</span>
+      </legend>
+      <div class="flex flex-wrap gap-4">
+        {[
+          ['', 'Keine Angabe'],
+          ['home', 'Heim'],
+          ['away', 'Auswärts'],
+        ].map(([value, name]) => (
+          <label class="flex items-center gap-2">
+            <input
+              type="radio"
+              name="homeAway"
+              value={value}
+              checked={values.homeAway === value}
+              class="size-5 accent-jersey"
+            />
+            {name}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  )}
+
+  <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+    <label class={label}>
+      Datum
+      <input
+        type="date"
+        name="day"
+        value={values.day}
+        required
+        class={field}
+        aria-invalid={errors.day ? 'true' : undefined}
+      />
+      {errors.day && <span class="font-normal text-rust">{errors.day}</span>}
+    </label>
+    <label class={label}>
+      Treffpunkt
+      <input type="time" name="meetTime" value={values.meetTime} class={field} />
+      {errors.meetTime && <span class="font-normal text-rust">{errors.meetTime}</span>}
+    </label>
+    <label class={label}>
+      Beginn
+      <input
+        type="time"
+        name="startTime"
+        value={values.startTime}
+        required
+        class={field}
+        aria-invalid={errors.startTime ? 'true' : undefined}
+      />
+      {errors.startTime && <span class="font-normal text-rust">{errors.startTime}</span>}
+    </label>
+    <label class={label}>
+      Ende <span class="font-normal text-text-light">(optional)</span>
+      <input type="time" name="endTime" value={values.endTime} class={field} />
+      {errors.endTime && <span class="font-normal text-rust">{errors.endTime}</span>}
+    </label>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <label class={label}>
+      Ort
+      <input
+        name="locationName"
+        value={values.locationName}
+        maxlength="120"
+        placeholder="Kangaroos Ballpark"
+        class={field}
+      />
+    </label>
+    <label class={label}>
+      Link zum Ort <span class="font-normal text-text-light">(z. B. Google Maps)</span>
+      <input
+        type="url"
+        name="locationUrl"
+        value={values.locationUrl}
+        placeholder="https://maps.google.com/…"
+        class={field}
+        aria-invalid={errors.locationUrl ? 'true' : undefined}
+      />
+      {errors.locationUrl && <span class="font-normal text-rust">{errors.locationUrl}</span>}
+    </label>
+  </div>
+
+  {(chooseType || !isTraining) && (
+    <div class="grid gap-4 sm:grid-cols-3">
+      <label class={label}>
+        Stichtag <span class="font-normal text-text-light">(nicht bei Trainings)</span>
+        <input
+          type="date"
+          name="respondDay"
+          value={values.respondDay}
+          class={field}
+          aria-invalid={errors.respondDay ? 'true' : undefined}
+        />
+        {errors.respondDay && <span class="font-normal text-rust">{errors.respondDay}</span>}
+      </label>
+      <label class={label}>
+        Uhrzeit Stichtag
+        <input type="time" name="respondTime" value={values.respondTime} class={field} />
+        {errors.respondTime && <span class="font-normal text-rust">{errors.respondTime}</span>}
+      </label>
+      <label class={label}>
+        Mindestzahl Spieler
+        <input
+          type="number"
+          name="minPlayers"
+          value={values.minPlayers}
+          min="1"
+          max="49"
+          inputmode="numeric"
+          placeholder="9"
+          class={field}
+          aria-invalid={errors.minPlayers ? 'true' : undefined}
+        />
+        {errors.minPlayers && <span class="font-normal text-rust">{errors.minPlayers}</span>}
+      </label>
+    </div>
+  )}
+
+  <div class="flex flex-wrap items-center gap-4">
+    <button
+      type="submit"
+      class="min-h-12 rounded bg-rust px-6 font-condensed text-lg font-semibold tracking-[0.04em] text-white uppercase hover:bg-rust-dark"
+    >
+      {submitLabel}
+    </button>
+    <a href={cancelHref} class="font-semibold">
+      Abbrechen
+    </a>
+  </div>
+</form>

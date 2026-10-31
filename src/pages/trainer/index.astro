@@ -1,7 +1,7 @@
 ---
 // Coach overview of one team (mockup: Trainer-Uebersicht.dc.html): how many children confirmed
 // the season, the next game and training, the season matrix, late changes and a WhatsApp text.
-// Not yet: reminders and push status – they follow with mail and push.
+// Not yet: the reminder plan and push status.
 import { LINK_KEY } from 'astro:env/server';
 import Base from '../../layouts/Base.astro';
 import {
@@ -77,7 +77,15 @@ const LABEL = { in: 'dabei', out: 'nicht dabei', open: 'offen' } as const;
     <>
       <div class="border-b border-line bg-chalk px-4 pt-7 pb-5.5 md:px-8">
         <p class="label mb-1.5">Saison {team.season}</p>
-        <h1 class="heading text-4xl leading-tight md:text-5xl">Übersicht</h1>
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <h1 class="heading text-4xl leading-tight md:text-5xl">Übersicht</h1>
+          <a
+            href={`/trainer/termin/neu?team=${team.id}`}
+            class="inline-flex min-h-11 items-center rounded bg-rust px-4 font-condensed text-lg font-semibold tracking-[0.04em] text-white uppercase no-underline hover:bg-rust-dark hover:text-white"
+          >
+            Termin anlegen
+          </a>
+        </div>
         {teams.length > 1 && (
           <nav class="mt-4 flex flex-wrap gap-2" aria-label="Team">
             {teams.map((t) => (

@@ -1,10 +1,12 @@
 ---
 // One event for coaches (mockup: Trainer-Termin.dc.html): who is in, out or still open, the coach
-// note and a ready-made WhatsApp text. The note form posts to this page (no JavaScript needed).
+// note, a ready-made WhatsApp text, and editing or cancelling the date. The forms post to this page
+// (no JavaScript needed); "intent" says which one.
 // Not yet: push to the families when the note changes – follows with push.
 import Base from '../../../layouts/Base.astro';
 import { eventWhatsAppText, groupByStatus, whatsAppShareUrl } from '../../../lib/answers.ts';
 import { canSeeTeam, coachTeams, eventDetail, setCoachNote } from '../../../lib/coach.ts';
+import { updateEvent } from '../../../lib/admin/data.ts';
 import { getDb } from '../../../lib/db/index.ts';
 import { deadline, longDate, shortDate, time, weekday } from '../../../lib/format.ts';
 import { needsAnswer } from '../../../lib/season.ts';
@@ -23,11 +25,35 @@ if (!detail || !canSeeTeam(coach, teams, detail.event.teamId)) {
 
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
+  const intent = String(form.get('intent') ?? 'note');
+  if (intent === 'cancel') {
+    const reason = String(form.get('reason') ?? '')
+      .trim()
+      .slice(0, 200);
+    await updateEvent(db, id, { cancelled: true, cancelReason: reason || null });
+    return Astro.redirect(`/trainer/termin/${id}?abgesagt=1`);
+  }
+  if (intent === 'uncancel') {
+    await updateEvent(db, id, { cancelled: false, cancelReason: null });
+    return Astro.redirect(`/trainer/termin/${id}?wieder=1`);
+  }
   const note = String(form.get('note') ?? '').trim();
   await setCoachNote(db, id, note || null);
   return Astro.redirect(`/trainer/termin/${id}?gespeichert=1`);
 }
-const saved = Astro.url.searchParams.has('gespeichert');
+const params = Astro.url.searchParams;
+const saved = params.has('gespeichert');
+const informed = Number(params.get('informiert') ?? 0);
+const mailFailed = Number(params.get('fehler') ?? 0);
+const notice = params.has('angelegt')
+  ? 'Termin angelegt.'
+  : params.has('geaendert')
+    ? `Änderung gespeichert.${informed ? ` ${informed === 1 ? 'Eine Familie mit Zusage wurde' : `${informed} Familien mit Zusage wurden`} per Mail informiert.` : ''}`
+    : params.has('abgesagt')
+      ? 'Termin abgesagt. Familien sehen „Fällt aus“ – teile es am besten auch in der WhatsApp-Gruppe.'
+      : params.has('wieder')
+        ? 'Absage zurückgenommen.'
+        : undefined;
 
 const { event, players, answers, phones } = detail;
 const team = teams.find((t) => t.id === event.teamId);
@@ -85,9 +111,66 @@ const nudge = (firstName: string) =>
         </span>
       )}
     </div>
+    <div class="mt-4 flex flex-wrap items-start gap-3">
+      <a
+        href={`/trainer/termin/${id}/bearbeiten`}
+        class="inline-flex min-h-11 items-center rounded border-2 border-jersey bg-white px-4 font-semibold text-jersey no-underline"
+      >
+        Termin bearbeiten
+      </a>
+      {event.cancelled ? (
+        <form method="post">
+          <input type="hidden" name="intent" value="uncancel" />
+          <button
+            type="submit"
+            class="min-h-11 rounded border-2 border-pill bg-white px-4 font-semibold text-ink"
+          >
+            Absage zurücknehmen
+          </button>
+        </form>
+      ) : (
+        <details class="group">
+          <summary class="inline-flex min-h-11 cursor-pointer list-none items-center rounded border-2 border-rust bg-white px-4 font-semibold text-rust">
+            Termin absagen
+          </summary>
+          <form
+            method="post"
+            class="mt-2 flex flex-col gap-2 rounded-md border border-line bg-white p-3"
+          >
+            <input type="hidden" name="intent" value="cancel" />
+            <label class="flex flex-col gap-1 text-[15px] font-semibold text-ink">
+              Grund{' '}
+              <span class="font-normal text-text-light">(optional, z. B. „Platz gesperrt“)</span>
+              <input
+                name="reason"
+                maxlength="200"
+                class="min-h-11 rounded border-2 border-pill px-3 font-normal"
+              />
+            </label>
+            <button
+              type="submit"
+              class="min-h-11 rounded bg-rust px-4 font-semibold text-white hover:bg-rust-dark"
+            >
+              Absagen
+            </button>
+          </form>
+        </details>
+      )}
+    </div>
   </div>
 
   <div class="flex flex-col gap-8 px-4 py-6 md:px-8">
+    {notice && (
+      <p role="status" class="rounded-md bg-success-bg p-4 font-semibold text-ink">
+        {notice}
+      </p>
+    )}
+    {mailFailed > 0 && (
+      <p role="alert" class="rounded-md bg-note-bg p-4 font-semibold text-rust-dark">
+        {mailFailed === 1 ? 'Eine Mail' : `${mailFailed} Mails`} an Familien konnten nicht
+        verschickt werden. Bitte die Änderung in der WhatsApp-Gruppe teilen.
+      </p>
+    )}
     {event.cancelled ? (
       <p class="rounded-md bg-note-bg p-4 font-semibold text-rust-dark">
         Fällt aus{event.cancelReason && ` · ${event.cancelReason}`}
@@ -167,6 +250,7 @@ const nudge = (firstName: string) =>
 
     <div class="grid gap-6 md:grid-cols-2">
       <form method="post" class="flex flex-col gap-2 rounded-md border border-line p-4">
+        <input type="hidden" name="intent" value="note" />
         <h2 class="heading text-2xl">Hinweis am Termin</h2>
         <label for="note" class="text-[15px]">
           Alle Familien im Team sehen den Hinweis beim Termin. Leer lassen zum Entfernen.

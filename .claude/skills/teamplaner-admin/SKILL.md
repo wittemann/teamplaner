@@ -48,6 +48,10 @@ Zeiten als ISO mit Offset, deutsche Zeit: Sommer `+02:00`, Winter `+01:00`.
 
 Fehler: 401 = Token falsch, 400 = `issues` (zod) zeigen das falsche Feld, 404 = ID unbekannt.
 
+Trainer können im Trainerbereich selbst Termine anlegen, bearbeiten und absagen (verlegtes Spiel → Mail an
+Familien mit Zusage). Über `PATCH /events/<id>` geht keine Mail raus – bei Verlegungen per API die Familien
+selbst informieren oder Martin auf den Trainerbereich verweisen.
+
 Erinnerungen: Der Cron schickt sie automatisch 7 Tage und 1 Tag vor dem Stichtag. Zum Saisonstart (ca. 3 Tage
 nach dem Versand der Links) oder auf Wunsch: erst `dryRun: true`, Martin die Liste zeigen, nach OK ohne
 `dryRun` senden. Höchstens eine Erinnerung pro Elternteil und Tag.

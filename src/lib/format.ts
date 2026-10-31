@@ -56,3 +56,26 @@ export function dayRange(from: string, to: string) {
   const short = (day: string) => `${day.slice(8, 10)}.${day.slice(5, 7)}.`;
   return from === to ? short(from) : `${short(from)}–${short(to)}`;
 }
+
+/** "09:30" – Berlin time as a time input wants it */
+export function timeInput(iso: string) {
+  return parts(iso, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+}
+
+function berlinOffsetMinutes(instant: Date) {
+  const name = new Intl.DateTimeFormat('en-US', { timeZone: TIME_ZONE, timeZoneName: 'longOffset' })
+    .formatToParts(instant)
+    .find((part) => part.type === 'timeZoneName')?.value;
+  const match = name?.match(/GMT([+-])(\d{2}):(\d{2})/);
+  if (!match) return 0;
+  return (match[1] === '-' ? -1 : 1) * (Number(match[2]) * 60 + Number(match[3]));
+}
+
+/** "2027-05-15" + "09:30" in Berlin → ISO timestamp (summer and winter time) */
+export function berlinIso(day: string, hhmm: string) {
+  const local = Date.parse(`${day}T${hhmm}:00Z`);
+  // The offset at the guessed instant, checked once more for days that switch time
+  let utc = local - berlinOffsetMinutes(new Date(local)) * 60_000;
+  utc = local - berlinOffsetMinutes(new Date(utc)) * 60_000;
+  return new Date(utc).toISOString();
+}

@@ -3,13 +3,20 @@
 // - "all" (Admin API, e.g. 3 days after the season links went out): every child with open games
 // The first reminder about a child goes to one parent; if it stays open, later ones go to all
 // its parents. At most one reminder per parent a day; nothing once all games are answered.
-import { answerToken } from './answer-link.ts';
+import { answerUrl } from './answer-link.ts';
 import type { Db } from './db/client.ts';
 import { deadline, isoDay, shortDate, weekday } from './format.ts';
+import {
+  answerButtons,
+  escapeHtml,
+  familyPageUrl,
+  mailFrame,
+  primaryButton,
+  smallPrint,
+} from './mail-html.ts';
 import type { Mail } from './mail.ts';
 import { isOpen } from './season-state.ts';
 import { loadSeason, type SeasonEvent } from './season.ts';
-import { openToken } from './token.ts';
 
 export type ReminderMode = 'due' | 'all';
 
@@ -137,14 +144,6 @@ function plural(n: number, one: string, many: string) {
   return n === 1 ? one : many.replace('#', String(n));
 }
 
-function escapeHtml(text: string) {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
 /** "Noch 2 Zusagen bis 9 Spieler", or nothing if the team is complete or has no minimum */
 function need(game: SeasonEvent) {
   if (!game.minPlayers || game.confirmed >= game.minPlayers) return undefined;
@@ -162,19 +161,14 @@ export function reminderMail(reminder: Reminder, origin: string, key: string | u
   const subject = `${names}: noch ${plural(open, '1 Spiel', '# Spiele')} offen`;
   const teams = [...new Set(reminder.children.map((c) => c.teamName))].join(' + ');
   const intro = `für ${names} ${plural(open, 'ist noch 1 Spiel', 'sind noch # Spiele')} offen.`;
-  // The personal link if it can be read, so "Alle Termine" opens the family's page directly
-  const accessToken = reminder.accessTokenSealed && openToken(reminder.accessTokenSealed, key);
-  const pageUrl = new URL(accessToken ? `/f/${accessToken}` : '/', origin).href;
-  const answerUrl = (child: ReminderChild, game: SeasonEvent, status: 'in' | 'out') =>
-    key &&
-    new URL(
-      `/antwort/${answerToken(
-        { guardianId: reminder.guardianId, playerId: child.playerId, eventId: game.id, status },
-        reminder.accessTokenHash,
-        key,
-      )}`,
+  const pageUrl = familyPageUrl(reminder.accessTokenSealed, key, origin);
+  const answer = (child: ReminderChild, game: SeasonEvent, status: 'in' | 'out') =>
+    answerUrl(
       origin,
-    ).href;
+      { guardianId: reminder.guardianId, playerId: child.playerId, eventId: game.id, status },
+      reminder.accessTokenHash,
+      key,
+    );
   const several = reminder.children.length > 1;
   const footer =
     'Diese Mail kommt nur, solange Spiele offen sind. Sind alle beantwortet, hören die Erinnerungen von selbst auf.';
@@ -185,10 +179,6 @@ export function reminderMail(reminder: Reminder, origin: string, key: string | u
     `${intro} Ein Tipp genügt – ihr müsst nichts weiter öffnen.`,
   ];
   const html: string[] = [
-    '<div style="background:#F7F6F1;padding:16px 0;font-family:Arial,sans-serif;font-size:16px;line-height:1.45;color:#1D231B">',
-    '<div style="max-width:520px;margin:0 auto;background:#FFFFFF;border-radius:6px;overflow:hidden">',
-    `<div style="background:#23461E;color:#FFFFFF;padding:14px 20px;font-weight:bold;letter-spacing:0.04em;text-transform:uppercase">Bretten Kangaroos · ${escapeHtml(teams)}</div>`,
-    '<div style="padding:20px">',
     `<p style="margin:0 0 6px">Hallo ${escapeHtml(reminder.name)},</p>`,
     `<p style="margin:0 0 16px">${escapeHtml(intro)} Ein Tipp genügt – ihr müsst nichts weiter öffnen.</p>`,
   ];
@@ -205,8 +195,8 @@ export function reminderMail(reminder: Reminder, origin: string, key: string | u
         need(game),
         game.respondBy && `Antwort bis ${deadline(game.respondBy)}`,
       ].filter((note): note is string => Boolean(note));
-      const yes = answerUrl(child, game, 'in');
-      const no = answerUrl(child, game, 'out');
+      const yes = answer(child, game, 'in');
+      const no = answer(child, game, 'out');
       text.push('', `${date} · ${game.title}`, ...notes);
       if (yes && no) text.push(`Dabei: ${yes}`, `Nicht dabei: ${no}`);
       html.push(
@@ -217,12 +207,7 @@ export function reminderMail(reminder: Reminder, origin: string, key: string | u
         ),
       );
       if (yes && no) {
-        html.push(
-          '<table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:10px;width:100%"><tr>',
-          `<td style="padding-right:4px;width:50%"><a href="${escapeHtml(yes)}" style="display:block;padding:11px 0;text-align:center;background:#1E7B3C;color:#FFFFFF;border-radius:4px;font-weight:bold;text-decoration:none">Dabei</a></td>`,
-          `<td style="padding-left:4px;width:50%"><a href="${escapeHtml(no)}" style="display:block;padding:9px 0;text-align:center;border:2px solid #C9C9C2;color:#1D231B;border-radius:4px;font-weight:bold;text-decoration:none">Nicht dabei</a></td>`,
-          '</tr></table>',
-        );
+        html.push(answerButtons({ url: yes, label: 'Dabei' }, { url: no, label: 'Nicht dabei' }));
       }
       html.push('</div>');
     }
@@ -237,16 +222,12 @@ export function reminderMail(reminder: Reminder, origin: string, key: string | u
     'Bretten Kangaroos',
     '',
   );
-  html.push(
-    `<p style="margin:20px 0 12px"><a href="${escapeHtml(pageUrl)}" style="display:inline-block;padding:12px 20px;background:#A3500F;color:#FFFFFF;border-radius:4px;font-weight:bold;text-decoration:none">Alle Termine ansehen</a></p>`,
-    `<p style="margin:0;color:#6B6F68;font-size:14px">${escapeHtml(footer)}</p>`,
-    '</div></div></div>',
-  );
+  html.push(primaryButton(pageUrl, 'Alle Termine ansehen'), smallPrint(footer));
   return {
     to: reminder.email,
     subject,
     text: text.join('\n'),
-    html: html.join('\n'),
+    html: mailFrame(`Bretten Kangaroos · ${teams}`, html),
   } satisfies Mail;
 }
 
