@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Trainer – Übersicht</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&amp;family=Barlow+Condensed:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#1E7B3C}a:hover{color:#23461E}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 2100px; box-sizing: border-box; background: #FFFFFF; font-family: 'Barlow', sans-serif; font-size: 17px; line-height: 1.5; color: #4A4A4A">
+
+  <header style="background: #23461E; color: #FFFFFF">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span style="width: 48px; height: 48px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; overflow: hidden">
+          <img src="/_blob/c67d46d18b2e95f921285e53693ca32c" alt="" style="width: 40px; height: 40px; object-fit: contain">
+        </span>
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 22px; line-height: 1; text-transform: uppercase; letter-spacing: 0.04em">Bretten<br>Kangaroos</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px; font-size: 16px">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 20px; text-transform: uppercase; letter-spacing: 0.04em">Trainerbereich</span>
+        <span style="color: #C7D8B8">Martin</span>
+      </div>
+    </div>
+  </header>
+
+  <div style="background: #F7F6F1; border-bottom: 1px solid #E3E3DE">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 40px clamp(16px, 4vw, 32px) 28px">
+      <p style="margin: 0 0 8px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; text-transform: uppercase; letter-spacing: 0.1em; color: #A3500F">Saison 2027</p>
+      <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 48px; line-height: 1.05; text-transform: uppercase; letter-spacing: 0.02em; color: #1D231B">Übersicht</h1>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px">
+        <button type="button" onClick="{{pickS}}" aria-pressed="{{isS}}" style="{{sStyle}}">Schüler</button>
+        <button type="button" onClick="{{pickJ}}" aria-pressed="{{isJ}}" style="{{jStyle}}">Jugend</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width: 1200px; margin: 0 auto; padding: 28px clamp(16px, 4vw, 32px) 56px; display: flex; flex-direction: column; gap: 28px">
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px">
+      <div style="border: 1px solid #E3E3DE; border-radius: 6px; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; text-transform: uppercase; letter-spacing: 0.1em; color: #6B6F68">Saison bestätigt</span>
+        <strong style="font-family: 'Barlow Condensed', sans-serif; font-size: 40px; line-height: 1; color: #1D231B">{{confirmed}} <span style="font-size: 22px; color: #6B6F68">von {{kidCount}} Kindern</span></strong>
+        <div style="height: 10px; border-radius: 999px; background: #E3E3DE; overflow: hidden"><div style="height: 10px; background: #1E7B3C; width: {{confirmedPct}}"></div></div>
+      </div>
+      <div style="border: 1px solid #E3E3DE; border-radius: 6px; padding: 20px; display: flex; flex-direction: column; gap: 8px">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; text-transform: uppercase; letter-spacing: 0.1em; color: #6B6F68">Nächstes Spiel</span>
+        <a href="Trainer-Termin.dc.html" style="font-weight: 600; font-size: 19px; color: #1D231B">{{next.label}} →</a>
+        <span style="font-size: 16px"><strong style="color: #1E7B3C">{{next.yes}} dabei</strong> · {{next.no}} nicht dabei · {{next.open}} offen</span>
+        <span style="align-self: flex-start; font-size: 14px; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: #EEF4E8; color: #23461E">Genug Spieler (min. 9)</span>
+      </div>
+      <div style="border: 1px solid #E3E3DE; border-radius: 6px; padding: 20px; display: flex; flex-direction: column; gap: 8px">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; text-transform: uppercase; letter-spacing: 0.1em; color: #6B6F68">Ohne Push</span>
+        <strong style="font-family: 'Barlow Condensed', sans-serif; font-size: 40px; line-height: 1; color: #1D231B">{{noPushCount}} <span style="font-size: 22px; color: #6B6F68">Familien</span></strong>
+        <span style="font-size: 15px">bekommen alles nur per E-Mail</span>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap">
+      <button type="button" onClick="{{remind}}" style="min-height: 48px; padding: 0 22px; border: 0; border-radius: 4px; background: #A3500F; color: #FFFFFF; font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer">Erinnerung an {{openKids}} Offene</button>
+      <button type="button" onClick="{{toggleWa}}" style="min-height: 48px; padding: 0 22px; border: 2px solid #1E7B3C; border-radius: 4px; background: #FFFFFF; color: #1E7B3C; font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer">WhatsApp-Text</button>
+      <button type="button" style="min-height: 48px; padding: 0 22px; border: 2px solid #1E7B3C; border-radius: 4px; background: #FFFFFF; color: #1E7B3C; font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer">Termin anlegen</button>    </div>
+
+    <sc-if value="{{reminded}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="background: #EEF4E8; border-radius: 6px; padding: 14px 18px; color: #1D231B; font-weight: 600">Erinnerung verschickt: {{remindText}}</div>
+    </sc-if>
+
+    <sc-if value="{{showWa}}" hint-placeholder-val="{{ false }}">
+      <div style="background: #F7F6F1; border-radius: 6px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; max-width: 640px">
+        <strong style="color: #1D231B">Text für die WhatsApp-Gruppe</strong>
+        <div style="background: #FFFFFF; border: 1px solid #E3E3DE; border-radius: 6px; padding: 14px 16px; white-space: pre-line; font-size: 16px; line-height: 1.45; color: #1D231B">{{waText}}</div>
+        <a href="{{waHref}}" target="_blank" rel="noopener" style="align-self: flex-start; min-height: 44px; padding: 0 18px; border-radius: 4px; background: #1E7B3C; color: #FFFFFF; text-decoration: none; font-family: 'Barlow', sans-serif; font-size: 16px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"></path></svg>
+          In WhatsApp teilen
+        </a>
+        <span style="font-size: 14px; color: #6B6F68">Öffnet WhatsApp mit diesem Text – Gruppe auswählen und senden.</span>
+      </div>
+    </sc-if>
+
+    <div>
+      <h2 style="margin: 0 0 6px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 32px; text-transform: uppercase; letter-spacing: 0.02em; color: #1D231B">Spiele</h2>
+      <p style="margin: 0 0 14px; font-size: 15px; color: #6B6F68">✓ dabei · ✗ nicht dabei · – offen. Auf ein Datum klicken für Details.</p>
+      <div style="overflow-x: auto; border: 1px solid #E3E3DE; border-radius: 6px">
+        <div style="min-width: 760px">
+          <div style="display: flex; background: #F7F6F1; border-bottom: 1px solid #E3E3DE">
+            <div style="width: 170px; flex-shrink: 0; padding: 10px 14px; font-weight: 600; color: #1D231B">Kind</div>
+            <sc-for list="{{games}}" as="g" hint-placeholder-count="8">
+              <a href="Trainer-Termin.dc.html" style="flex: 1; min-width: 68px; padding: 8px 4px; text-align: center; text-decoration: none; display: flex; flex-direction: column; line-height: 1.2">
+                <strong style="font-size: 15px; color: #1D231B">{{g.date}}</strong>
+                <span style="font-size: 13px; color: #6B6F68">{{g.short}}</span>
+              </a>
+            </sc-for>
+          </div>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="16">
+            <div style="display: flex; border-bottom: 1px solid #EFEEE9">
+              <div style="width: 170px; flex-shrink: 0; padding: 8px 14px; font-size: 16px; color: #1D231B; display: flex; align-items: center; gap: 6px">
+                {{r.name}}
+                <sc-if value="{{r.noPush}}" hint-placeholder-val="{{ false }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6F68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="ohne Push"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M3 3l18 18"></path></svg>
+                </sc-if>
+              </div>
+              <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="8">
+                <div style="flex: 1; min-width: 68px; display: flex; align-items: center; justify-content: center; padding: 6px 4px">
+                  <span aria-label="{{c.label}}" style="{{c.style}}">{{c.sym}}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+          <div style="display: flex; background: #F7F6F1">
+            <div style="width: 170px; flex-shrink: 0; padding: 10px 14px; font-weight: 600; color: #1D231B">Zusagen</div>
+            <sc-for list="{{games}}" as="g" hint-placeholder-count="8">
+              <div style="flex: 1; min-width: 68px; padding: 10px 4px; text-align: center; font-weight: 600; color: {{g.countColor}}">{{g.yes}}</div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px">
+        <h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 26px; text-transform: uppercase; color: #1D231B">Automatische Erinnerungen</h2>
+        <label style="display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 600; color: #1D231B">
+          <input type="checkbox" checked style="width: 22px; height: 22px; accent-color: #1E7B3C"> Eingeschaltet
+        </label>
+      </div>
+      <p style="margin: 0 0 12px; font-size: 15px; color: #6B6F68">Nur an Familien mit offenen Spielen. Reagiert ein Elternteil nicht, geht die nächste Erinnerung an den anderen Elternteil.</p>
+      <ol style="list-style: none; margin: 0; padding: 0; border-top: 1px solid #E3E3DE">
+        <sc-for list="{{reminders}}" as="m" hint-placeholder-count="5">
+          <li style="padding: 12px 0; border-bottom: 1px solid #E3E3DE; display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap">
+            <strong style="width: 90px; flex-shrink: 0; color: #1D231B">{{m.date}}</strong>
+            <span style="flex: 1; min-width: 220px; color: #1D231B">{{m.what}} <span style="font-size: 15px; color: #6B6F68">{{m.detail}}</span></span>
+            <span style="{{m.badgeStyle}}">{{m.status}}</span>
+          </li>
+        </sc-for>
+      </ol>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px">
+      <div>
+        <h2 style="margin: 0 0 10px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 26px; text-transform: uppercase; color: #1D231B">Späte Änderungen</h2>
+        <ul style="list-style: none; margin: 0; padding: 0; border-top: 1px solid #E3E3DE">
+          <sc-for list="{{late}}" as="l" hint-placeholder-count="2">
+            <li style="padding: 12px 0; border-bottom: 1px solid #E3E3DE; display: flex; flex-direction: column">
+              <span style="color: #1D231B"><strong>{{l.name}}</strong> · {{l.game}}: {{l.change}}</span>
+              <span style="font-size: 14px; color: #6B6F68">{{l.when}}</span>
+            </li>
+          </sc-for>
+        </ul>
+      </div>
+      <div>
+        <h2 style="margin: 0 0 10px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 26px; text-transform: uppercase; color: #1D231B">Ohne Push-Benachrichtigung</h2>
+        <ul style="list-style: none; margin: 0; padding: 0; border-top: 1px solid #E3E3DE">
+          <sc-for list="{{noPush}}" as="n" hint-placeholder-count="4">
+            <li style="padding: 12px 0; border-bottom: 1px solid #E3E3DE; display: flex; justify-content: space-between; gap: 12px">
+              <span style="color: #1D231B">{{n.name}}</span>
+              <span style="font-size: 15px; color: #6B6F68">{{n.why}}</span>
+            </li>
+          </sc-for>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":2100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { team: 's', wa: false, reminded: false };
+  }
+  data(team) {
+    if (team === 's') {
+      return {
+        kids: ['Ella M.', 'Noah K.', 'Mia S.', 'Paul W.', 'Lina B.', 'Finn H.', 'Emma R.', 'Leon D.', 'Sofia T.', 'Jonas F.', 'Hannah L.', 'Elias G.', 'Lea P.', 'Luis N.', 'Marie A.', 'Tom Z.'],
+        games: [['17.04.', 'Heidelberg'], ['24.04.', '@ Mannheim'], ['08.05.', 'Karlsruhe'], ['22.05.', '@ Pforzheim'], ['05.06.', 'Cup'], ['19.06.', 'Mannheim'], ['26.06.', '@ Heidelberg'], ['10.07.', 'Pforzheim']],
+        first: ['i', 'i', 'o', 'o', 'o', 'o', 'x', 'o'],
+        next: 'Sa 17.04. vs. Heidelberg',
+        noPush: [3, 7, 11, 14],
+        late: [
+          { name: 'Lina B.', game: 'Sa 17.04.', change: 'Dabei → Nicht dabei', when: 'Fr 16.04., 21:14 · Push an dich gesendet' },
+          { name: 'Finn H.', game: 'Sa 17.04.', change: 'Offen → Dabei', when: 'Fr 16.04., 18:02 · Push an dich gesendet' }
+        ],
+        seed: 7
+      };
+    }
+    return {
+      kids: ['Ben M.', 'Lukas K.', 'Anna S.', 'Felix W.', 'Julia B.', 'Max H.', 'Laura R.', 'David D.', 'Nina T.', 'Jan F.', 'Sarah L.', 'Tim G.', 'Clara P.', 'Moritz N.'],
+      games: [['18.04.', 'Karlsruhe'], ['02.05.', '@ Heidelberg'], ['16.05.', 'Mannheim'], ['30.05.', '@ Karlsruhe'], ['06.06.', '@ Heidelberg'], ['27.06.', 'Pforzheim'], ['11.07.', '@ Mannheim']],
+      first: ['i', 'i', 'i', 'i', 'x', 'i', 'i'],
+      next: 'So 18.04. vs. Karlsruhe',
+      noPush: [2, 9],
+      late: [
+        { name: 'Tim G.', game: 'So 18.04.', change: 'Dabei → Nicht dabei', when: 'Sa 17.04., 08:40 · Push an dich gesendet' }
+      ],
+      seed: 3
+    };
+  }
+  renderVals() {
+    var self = this;
+    var team = this.state.team;
+    var d = this.data(team);
+    var s = d.seed;
+    var rnd = function () { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+    var matrix = d.kids.map(function (name, i) {
+      return d.games.map(function (g, j) {
+        if (i === 0) return d.first[j];
+        var x = rnd();
+        if (i % 5 === 2) return x < 0.6 ? 'o' : 'i';
+        return x < 0.78 ? 'i' : (x < 0.9 ? 'x' : 'o');
+      });
+    });
+    if (team === 's') matrix[4][0] = 'x';
+    var cellStyle ='width: 34px; height: 34px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px; ';
+    var rows = d.kids.map(function (name, i) {
+      return {
+        name: name,
+        noPush: d.noPush.indexOf(i) >= 0,
+        cells: matrix[i].map(function (v) {
+          if (v === 'i') return { sym: '✓', label: 'dabei', style: cellStyle + 'background: #E3EFDA; color: #1E7B3C' };
+          if (v === 'x') return { sym: '✗', label: 'nicht dabei', style: cellStyle + 'background: #F6E3D6; color: #8A3A0A' };
+          return { sym: '–', label: 'offen', style: cellStyle + 'background: #FFFFFF; color: #6B6F68; border: 1px dashed #A9ACA4' };
+        })
+      };
+    });
+    var games = d.games.map(function (g, j) {
+      var yes = matrix.filter(function (m) { return m[j] === 'i'; }).length;
+      return { date: g[0], short: g[1], yes: yes, countColor: yes >= 9 ? '#1E7B3C' : '#A3500F' };
+    });
+    var col0 = matrix.map(function (m) { return m[0]; });
+    var openKids = matrix.filter(function (m) { return m.indexOf('o') >= 0; }).length;
+    var confirmed = d.kids.length - openKids;
+    var pill = 'min-height: 44px; padding: 0 20px; border-radius: 999px; font-family: \'Barlow\', sans-serif; font-size: 17px; font-weight: 600; cursor: pointer; ';
+    var on = pill + 'border: 2px solid #23461E; background: #23461E; color: #FFFFFF';
+    var off = pill + 'border: 2px solid #C9C9C2; background: #FFFFFF; color: #1D231B';
+    var teamName = team === 's' ? 'Schüler' : 'Jugend';
+    var waText = teamName + ': Bitte für die Saison 2027 zu- oder absagen!\nNoch offen: ' + openKids + ' Kinder.\nEuren persönlichen Link habt ihr per Mail bekommen – oder hier neu anfordern:\nbretten-kangaroos.net/team';
+    var noPushIn =d.noPush.filter(function (i) { return matrix[i].indexOf('o') >= 0; }).length;
+    var badge = 'font-size: 14px; font-weight: 600; padding: 2px 10px; border-radius: 999px; ';
+    var sent = badge + 'background: #EEF4E8; color: #23461E';
+    var planned = badge + 'background: #F7F6F1; color: #3A3F38; border: 1px solid #C9C9C2';
+    var reminders = [
+      { date: 'Mo 29.03.', what: 'Saison-Link an alle Familien', detail: '', status: 'gesendet', badgeStyle: sent },
+      { date: 'Do 01.04.', what: '1. Erinnerung an ' + (openKids + 3) + ' offene Familien', detail: '', status: 'gesendet', badgeStyle: sent },
+      { date: 'Do 08.04.', what: '2. Erinnerung an ' + openKids + ' offene Familien', detail: '2× an den zweiten Elternteil', status: 'gesendet', badgeStyle: sent },
+      { date: 'Do 29.04.', what: '7 Tage vor Stichtag', detail: '(Sa 08.05. vs. Karlsruhe)', status: 'geplant', badgeStyle: planned },
+      { date: 'Mi 05.05.', what: '1 Tag vor Stichtag', detail: '(Sa 08.05. vs. Karlsruhe)', status: 'geplant', badgeStyle: planned }
+    ];
+    return {
+      reminders: reminders,
+      isS: team === 's', isJ: team === 'j',
+      sStyle: team === 's' ? on : off,
+      jStyle: team === 'j' ? on : off,
+      pickS: function () { self.setState({ team: 's', reminded: false }); },
+      pickJ: function () { self.setState({ team: 'j', reminded: false }); },
+      kidCount: d.kids.length,
+      confirmed: confirmed,
+      confirmedPct: Math.round(confirmed / d.kids.length * 100) + '%',
+      next: {
+        label: d.next,
+        yes: col0.filter(function (v) { return v === 'i'; }).length,
+        no: col0.filter(function (v) { return v === 'x'; }).length,
+        open: col0.filter(function (v) { return v === 'o'; }).length
+      },
+      noPushCount: d.noPush.length,
+      openKids: openKids,
+      reminded: this.state.reminded,
+      remindText: (openKids - noPushIn) + '× Push, ' + noPushIn + '× E-Mail',
+      remind: function () { self.setState({ reminded: true }); },
+      showWa: this.state.wa,
+      toggleWa: function () { self.setState({ wa: !self.state.wa }); },
+      waText: waText,
+      waHref: 'https://wa.me/?text=' + encodeURIComponent(waText),
+      games: games,
+      rows: rows,
+      late: d.late,
+      noPush: d.noPush.map(function (i) { return { name: d.kids[i], why: i % 2 ? 'nur im Browser' : 'Push nicht erlaubt' }; })
+    };
+  }
+}
+</script>
+</body>
+</html>

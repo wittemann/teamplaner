@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Eltern – Home-Bildschirm und Benachrichtigungen</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&amp;family=Barlow+Condensed:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#1E7B3C}a:hover{color:#23461E}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1100px; box-sizing: border-box; background: #FFFFFF; font-family: 'Barlow', sans-serif; font-size: 17px; line-height: 1.5; color: #4A4A4A">
+
+  <header style="background: #23461E; color: #FFFFFF; height: 64px; padding: 0 8px; display: flex; align-items: center; gap: 4px">
+    <a href="Main.dc.html" aria-label="Zurück zur Saisonübersicht" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #FFFFFF">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    </a>
+    <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: 0.04em">Benachrichtigungen</span>
+  </header>
+
+  <div style="padding: 24px 16px 0; display: flex; flex-direction: column; gap: 16px">
+    <p style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; text-transform: uppercase; letter-spacing: 0.1em; color: #A3500F">Schritt 1</p>
+    <h1 style="margin: -8px 0 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 30px; line-height: 1.1; text-transform: uppercase; color: #1D231B">Zum Home-Bildschirm hinzufügen</h1>
+    <div style="display: flex; gap: 8px">
+      <button type="button" onClick="{{pickIos}}" aria-pressed="{{isIos}}" style="{{iosStyle}}">iPhone</button>
+      <button type="button" onClick="{{pickAndroid}}" aria-pressed="{{isAndroid}}" style="{{androidStyle}}">Android</button>
+    </div>
+    <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px">
+      <sc-for list="{{steps}}" as="s" hint-placeholder-count="3">
+        <li style="display: flex; gap: 12px; align-items: flex-start; background: #F7F6F1; border-radius: 6px; padding: 12px 14px">
+          <span style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 999px; background: #23461E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px">{{s.n}}</span>
+          <span style="font-size: 16px; line-height: 1.4; color: #1D231B; padding-top: 3px">{{s.text}}</span>
+        </li>
+      </sc-for>
+    </ol>
+    <p style="margin: 0; font-size: 15px; color: #6B6F68">Der Hinweis auf der Startseite bleibt, bis die Seite vom Home-Bildschirm aus geöffnet wird.</p>
+  </div>
+
+  <div style="margin: 28px 16px 0; padding-top: 24px; border-top: 1px solid #E3E3DE; display: flex; flex-direction: column; gap: 14px">
+    <p style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 15px; text-transform: uppercase; letter-spacing: 0.1em; color: #A3500F">Schritt 2</p>
+    <h2 style="margin: -6px 0 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 26px; text-transform: uppercase; color: #1D231B">Benachrichtigungen erlauben</h2>
+    <sc-if value="{{pushOff}}" hint-placeholder-val="{{ true }}">
+      <button type="button" onClick="{{enable}}" style="min-height: 52px; width: 100%; border: 0; border-radius: 4px; background: #A3500F; color: #FFFFFF; font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer">Benachrichtigungen aktivieren</button>
+    </sc-if>
+    <sc-if value="{{pushOn}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="background: #EEF4E8; border-radius: 6px; padding: 14px 16px; display: flex; gap: 10px; align-items: center; color: #1D231B; font-weight: 600">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E7B3C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>
+        Aktiv auf diesem Gerät.
+      </div>
+    </sc-if>
+    <strong style="color: #1D231B; font-size: 16px; margin-top: 4px">Du bekommst nur:</strong>
+    <ul style="margin: 0; padding: 0 0 0 20px; display: flex; flex-direction: column; gap: 6px; font-size: 16px">
+      <li>eine Erinnerung, wenn noch Spiele offen sind</li>
+      <li>Hinweise vom Trainer, z. B. „Treffpunkt geändert“</li>
+    </ul>
+    <p style="margin: 0 0 40px; font-size: 15px; color: #6B6F68">Ohne Benachrichtigungen kommt alles per E-Mail.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { os: 'ios', push: false };
+  }
+  renderVals() {
+    var self = this;
+    var ios = this.state.os === 'ios';
+    var pill = 'min-height: 44px; padding: 0 18px; border-radius: 999px; font-family: \'Barlow\', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer; ';
+    var on = pill + 'border: 2px solid #23461E; background: #23461E; color: #FFFFFF';
+    var off = pill + 'border: 2px solid #C9C9C2; background: #FFFFFF; color: #1D231B';
+    var steps = ios
+      ? [
+          { n: '1', text: 'Diese Seite in Safari öffnen.' },
+          { n: '2', text: 'Unten auf das Teilen-Symbol tippen (Quadrat mit Pfeil nach oben).' },
+          { n: '3', text: '„Zum Home-Bildschirm“ wählen und „Hinzufügen“ tippen.' }
+        ]
+      : [
+          { n: '1', text: 'Diese Seite in Chrome öffnen.' },
+          { n: '2', text: 'Oben rechts auf die drei Punkte tippen.' },
+          { n: '3', text: '„Zum Startbildschirm hinzufügen“ wählen.' }
+        ];
+    return {
+      isIos: ios, isAndroid: !ios,
+      iosStyle: ios ? on : off,
+      androidStyle: ios ? off : on,
+      pickIos: function () { self.setState({ os: 'ios' }); },
+      pickAndroid: function () { self.setState({ os: 'android' }); },
+      steps: steps,
+      pushOn: this.state.push,
+      pushOff: !this.state.push,
+      enable: function () { self.setState({ push: true }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

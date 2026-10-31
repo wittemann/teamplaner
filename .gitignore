@@ -1,0 +1,28 @@
+# build output
+dist/
+.vercel/
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# local database (PGlite, see docs/tech.md)
+.pglite/
+
+# logs
+npm-debug.log*
+
+# environment variables: never commit secrets
+.env
+.env.*
+!.env.example
+
+# test output
+coverage/
+
+# macOS-specific files
+.DS_Store
+
+# editors
+.idea/

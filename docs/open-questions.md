@@ -1,0 +1,44 @@
+# Offene Fragen
+
+## Geklärt (2026-10-29)
+
+- 2 Teams (Schüler, Jugend), je max. ~16 Kinder
+- Spiele + Trainings
+- Nur dabei / nicht dabei
+- Saisonplan steht zu Saisonbeginn, Zusage für die ganze Saison
+- Keine Gebühren, keine Statistiken, kein App Store (außer zwingend)
+- Kein Next.js; **eigene App auf Vercel** (Astro mit Server-Rendering, wie die Rezepte-App), Optik wie die Homepage, unter `team.bretten-kangaroos.net`
+- Claude-Anbindung ist Pflicht – nur für Martin, einfach gehalten (Admin-Token + Skill, kein MCP)
+- Spiele ohne Antwort = **offen**, Eltern müssen ausdrücklich zusagen
+- Trainings: Standard **dabei**, Eltern melden nur ab
+- Benachrichtigungen: E-Mail + WhatsApp-Text + **Web Push** (Erinnerung „offen“, Hinweis am Termin, späte Änderung an Trainer; keine Spieltag-Erinnerung)
+- 4 Trainer (Martin + 3)
+- Änderungen nach dem Stichtag erlaubt (Trainer wird benachrichtigt)
+- Datenbank: Postgres bei Neon (Vercel Marketplace, Frankfurt)
+- Kein Chat; stattdessen Hinweis am Termin + Knopf „In WhatsApp teilen“
+- WhatsApp: keine direkte Anbindung (siehe [tech.md](tech.md)), nur Teilen-Knopf
+
+## Chat – ersetzt das die WhatsApp-Gruppe?
+
+**Entschieden: kein Chat.** Gründe:
+
+- Eltern sind in WhatsApp sowieso – ein zweiter Kanal wird nicht gelesen.
+- Chat bedeutet Moderation, Benachrichtigungen, Datenschutz für Nachrichten – viel Aufwand, wenig Nutzen.
+- Das Problem ist nicht Kommunikation, sondern verlässliche Zu-/Absagen.
+
+Was es stattdessen geben könnte:
+
+- **Hinweis pro Termin** vom Trainer („Treffpunkt geändert“, „Trikot weiß“) – steht beim Termin, optional als Mail
+- **Fertiger WhatsApp-Text** mit Link, per Knopf „In WhatsApp teilen“
+- Ein Chat würde WhatsApp nur ersetzen, wenn ihr WhatsApp loswerden _wollt_ (z. B. Datenschutz) – dann eher über eine eigene Lösung nachdenken als hier eine einzubauen.
+
+## Noch offen
+
+- [ ] **Vercel-Support** fragen, ob der Hobby-Plan für ein ehrenamtliches Vereinswerkzeug ohne Werbung/Zahlungen in Ordnung ist (optional)
+- [ ] **Subdomain** `team.bretten-kangaroos.net` bei IONOS auf Vercel zeigen lassen
+- [ ] **Neon** aktuelle Grenzen des kostenlosen Plans prüfen
+- [ ] **DPA** von Vercel und Neon im Verein ablegen
+- [ ] **Trainer:** Welcher der 3 weiteren Trainer betreut welches Team?
+- [ ] **Vorstand:** Zustimmung zum Datenschutz nötig?
+- [ ] **Migration:** Kinder-/Elternliste aus SpielerPlus exportierbar?
+- [ ] **Testphase:** Parallel zu SpielerPlus, z. B. ein Team zuerst?

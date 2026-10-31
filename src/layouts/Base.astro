@@ -1,0 +1,47 @@
+---
+// Shell for every page: head, fonts, header with the crest (docs/design.md, "Kopfzeile").
+import { Font } from 'astro:assets';
+import '../styles/global.css';
+
+type Props = {
+  title: string;
+  /** Shown on the right of the header, e.g. "Familie Müller" */
+  who?: string;
+};
+
+const { title, who } = Astro.props;
+---
+
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- Personal pages: never in search engines (docs/tech.md, "Datenschutz") -->
+    <meta name="robots" content="noindex, nofollow" />
+    <!-- The token in /f/<token> must not leak to other sites through the Referer header -->
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#23461E" />
+    <title>{title}</title>
+    <link rel="icon" type="image/png" href="/crest.png" />
+    <Font cssVariable="--font-barlow" preload />
+    <Font cssVariable="--font-barlow-condensed" preload />
+  </head>
+  <body>
+    <header class="flex h-16 items-center justify-between gap-3 bg-forest px-4 text-white">
+      <div class="flex items-center gap-2.5">
+        <span class="flex size-10 items-center justify-center overflow-hidden rounded-full bg-white">
+          <img src="/crest.png" alt="" class="size-[34px] object-contain" />
+        </span>
+        <span class="font-condensed text-lg leading-none font-bold tracking-[0.04em] uppercase">
+          Bretten
+          <br />
+          Kangaroos
+        </span>
+      </div>
+      {who && <span class="text-[15px] text-[#C7D8B8]">{who}</span>}
+    </header>
+    <main class="mx-auto max-w-xl">
+      <slot />
+    </main>
+  </body>
+</html>

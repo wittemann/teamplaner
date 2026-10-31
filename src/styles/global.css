@@ -1,0 +1,43 @@
+@import 'tailwindcss';
+
+/* Colors and fonts of the homepage (docs/design.md) */
+@theme {
+  --color-forest: #23461e;
+  --color-jersey: #1e7b3c;
+  --color-leaf: #80b058;
+  --color-rust: #a3500f;
+  --color-rust-dark: #8a3a0a;
+  --color-chalk: #f7f6f1;
+  --color-ink: #1d231b;
+  --color-line: #e3e3de;
+  --color-pill: #c9c9c2;
+  --color-text: #4a4a4a;
+  --color-text-light: #6b6f68;
+  --color-success-bg: #eef4e8;
+  --color-note-bg: #fff4e5;
+
+  --font-sans: var(--font-barlow);
+  --font-condensed: var(--font-barlow-condensed);
+}
+
+@layer base {
+  html {
+    font-size: 106.25%; /* 17px base, as on the homepage */
+  }
+  body {
+    @apply bg-white font-sans leading-normal text-text;
+  }
+  a {
+    @apply text-jersey hover:text-forest;
+  }
+  button {
+    cursor: pointer;
+  }
+}
+
+@utility label {
+  @apply font-condensed text-[15px] font-semibold tracking-[0.1em] text-rust uppercase;
+}
+@utility heading {
+  @apply font-condensed font-bold tracking-[0.02em] text-ink uppercase;
+}

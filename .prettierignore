@@ -1,0 +1,6 @@
+dist/
+.vercel/
+.astro/
+coverage/
+package-lock.json
+mockup/

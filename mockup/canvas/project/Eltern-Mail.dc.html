@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Eltern – Erinnerungs-Mail</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&amp;family=Barlow+Condensed:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F6F1}
+a{color:#1E7B3C}a:hover{color:#23461E}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1150px; box-sizing: border-box; background: #F7F6F1; font-family: 'Barlow', sans-serif; font-size: 17px; line-height: 1.5; color: #4A4A4A; padding: 16px">
+
+  <div style="font-size: 14px; color: #6B6F68; padding: 4px 4px 14px; display: flex; flex-direction: column">
+    <span><strong style="color: #1D231B">Von:</strong> Bretten Kangaroos</span>
+    <span><strong style="color: #1D231B">Betreff:</strong> Ella: noch 3 Spiele offen</span>
+  </div>
+
+  <div style="background: #FFFFFF; border-radius: 6px; overflow: hidden; border: 1px solid #E3E3DE">
+    <div style="background: #23461E; color: #FFFFFF; padding: 14px 18px; display: flex; align-items: center; gap: 10px">
+      <span style="width: 36px; height: 36px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; overflow: hidden">
+        <img src="/_blob/c67d46d18b2e95f921285e53693ca32c" alt="" style="width: 30px; height: 30px; object-fit: contain">
+      </span>
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: 0.04em">Bretten Kangaroos · Schüler</span>
+    </div>
+
+    <div style="padding: 20px 18px; display: flex; flex-direction: column; gap: 14px">
+      <p style="margin: 0; color: #1D231B">Hallo Familie Müller,</p>
+      <p style="margin: 0; color: #3A3F38">für Ella sind noch 3 Spiele offen. Ein Tipp genügt – ihr müsst nichts weiter öffnen.</p>
+
+      <sc-for list="{{games}}" as="g" hint-placeholder-count="3">
+        <div style="border: 1px solid #E3E3DE; border-radius: 6px; padding: 14px">
+          <strong style="display: block; color: #1D231B; font-size: 18px">{{g.date}} · {{g.title}}</strong>
+          <span style="display: block; font-size: 15px; font-weight: 600; color: #A3500F">{{g.need}}</span>
+          <span style="display: block; font-size: 14px; color: #6B6F68">{{g.due}}</span>
+          <sc-if value="{{g.open}}" hint-placeholder-val="{{ true }}">
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px">
+              <button type="button" onClick="{{g.setIn}}" style="min-height: 48px; border: 0; border-radius: 4px; background: #1E7B3C; color: #FFFFFF; font-family: 'Barlow', sans-serif; font-size: 17px; font-weight: 600; cursor: pointer">Dabei</button>
+              <button type="button" onClick="{{g.setOut}}" style="min-height: 48px; border: 0; border-radius: 4px; background: #A3500F; color: #FFFFFF; font-family: 'Barlow', sans-serif; font-size: 17px; font-weight: 600; cursor: pointer">Nicht dabei</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{g.done}}" hint-placeholder-val="{{ false }}">
+            <p role="status" style="margin: 12px 0 0; padding: 10px 12px; border-radius: 4px; background: #EEF4E8; color: #1D231B; font-weight: 600; font-size: 15px">Danke! Ella ist {{g.answer}}.</p>
+          </sc-if>
+        </div>
+      </sc-for>
+
+      <a href="Main.dc.html" style="min-height: 48px; display: flex; align-items: center; justify-content: center; border: 2px solid #1E7B3C; border-radius: 4px; text-decoration: none; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em">Alle Termine ansehen</a>
+      <p style="margin: 0; font-size: 14px; line-height: 1.45; color: #6B6F68">Diese Mail kommt nur, solange Spiele offen sind. Sind alle beantwortet, hören die Erinnerungen von selbst auf.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1150}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { a: {} };
+  }
+  renderVals() {
+    var self = this;
+    var list = [
+      { id: 'g3', date: 'Sa 08.05.', title: 'vs. Karlsruhe', need: 'Noch 2 Zusagen bis 9 Spieler', due: 'Antwort bis Do 06.05., 20 Uhr' },
+      { id: 'g5', date: 'Sa 05.06.', title: 'Schüler-Cup', need: 'Noch 1 Zusage bis 9 Spieler', due: 'Antwort bis Do 03.06., 20 Uhr' },
+      { id: 'g6', date: 'Sa 19.06.', title: 'vs. Mannheim', need: 'Noch 3 Zusagen bis 9 Spieler', due: 'Antwort bis Do 17.06., 20 Uhr' }
+    ];
+    var a = this.state.a;
+    var set = function (id, v) {
+      var next = Object.assign({}, self.state.a);
+      next[id] = v;
+      self.setState({ a: next });
+    };
+    return {
+      games: list.map(function (g) {
+        var v = a[g.id];
+        return Object.assign({}, g, {
+          open: !v, done: !!v,
+          answer: v === 'in' ? 'am ' + g.date + ' dabei' : 'am ' + g.date + ' nicht dabei',
+          setIn: function () { set(g.id, 'in'); },
+          setOut: function () { set(g.id, 'out'); }
+        });
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

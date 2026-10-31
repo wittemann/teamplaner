@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Eltern – Trainings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&amp;family=Barlow+Condensed:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#1E7B3C}a:hover{color:#23461E}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1300px; box-sizing: border-box; background: #FFFFFF; font-family: 'Barlow', sans-serif; font-size: 17px; line-height: 1.5; color: #4A4A4A">
+
+  <header style="background: #23461E; color: #FFFFFF; height: 64px; padding: 0 8px; display: flex; align-items: center; gap: 4px">
+    <a href="Main.dc.html" aria-label="Zurück zur Saisonübersicht" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #FFFFFF">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    </a>
+    <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: 0.04em">Trainings · Ella</span>
+  </header>
+
+  <div style="background: #F7F6F1; border-bottom: 1px solid #E3E3DE; padding: 20px 16px; display: flex; flex-direction: column; gap: 6px">
+    <strong style="color: #1D231B; font-size: 18px">Di + Do, 17:30–19:00 · Kangaroos Ballpark</strong>
+    <span style="font-size: 15px; line-height: 1.45; color: #3A3F38">Ella ist bei jedem Training automatisch dabei. Tippe nur auf <strong style="color: #1D231B">Abmelden</strong>, wenn sie nicht kommen kann.</span>
+    <strong style="font-size: 15px; color: #A3500F">{{countText}}</strong>
+  </div>
+
+  <ul style="list-style: none; margin: 0; padding: 8px 16px 40px">
+    <sc-for list="{{rows}}" as="t" hint-placeholder-count="12">
+      <li style="min-height: 64px; border-bottom: 1px solid #E3E3DE; display: flex; align-items: center; gap: 12px; padding: 8px 0">
+        <div style="width: 84px; flex-shrink: 0; display: flex; flex-direction: column; line-height: 1.2">
+          <strong style="color: #1D231B">{{t.dow}} {{t.date}}</strong>
+          <span style="font-size: 14px; color: #6B6F68">17:30</span>
+        </div>
+        <div style="flex: 1; min-width: 0; font-size: 15px">
+          <sc-if value="{{t.cancelled}}" hint-placeholder-val="{{ false }}">
+            <span style="color: #6B6F68">Fällt aus · {{t.reason}}</span>
+          </sc-if>
+          <sc-if value="{{t.showIn}}" hint-placeholder-val="{{ true }}">
+            <span style="color: #1E7B3C; font-weight: 600">Dabei</span>
+          </sc-if>
+          <sc-if value="{{t.isOut}}" hint-placeholder-val="{{ false }}">
+            <span style="color: #A3500F; font-weight: 600">Abgemeldet</span>
+          </sc-if>
+        </div>
+        <sc-if value="{{t.showIn}}" hint-placeholder-val="{{ true }}">
+          <button type="button" onClick="{{t.toggle}}" style="min-height: 44px; padding: 0 14px; border: 2px solid #C9C9C2; border-radius: 4px; background: #FFFFFF; color: #1D231B; font-family: 'Barlow', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer">Abmelden</button>
+        </sc-if>
+        <sc-if value="{{t.isOut}}" hint-placeholder-val="{{ false }}">
+          <button type="button" onClick="{{t.toggle}}" style="min-height: 44px; padding: 0 14px; border: 2px solid #1E7B3C; border-radius: 4px; background: #FFFFFF; color: #1E7B3C; font-family: 'Barlow', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer">Doch dabei</button>
+        </sc-if>
+      </li>
+    </sc-for>
+  </ul>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { out: { t4: true } };
+  }
+  renderVals() {
+    var self = this;
+    var list = [
+      ['t1', 'Di', '20.04.'], ['t2', 'Do', '22.04.'], ['t3', 'Di', '27.04.'], ['t4', 'Do', '29.04.'],
+      ['t5', 'Di', '04.05.'], ['t6', 'Do', '06.05.', 'Christi Himmelfahrt'], ['t7', 'Di', '11.05.'], ['t8', 'Do', '13.05.'],
+      ['t9', 'Di', '18.05.'], ['t10', 'Do', '20.05.'], ['t11', 'Di', '25.05.'], ['t12', 'Do', '27.05.']
+    ];
+    var out = this.state.out;
+    var rows = list.map(function (x) {
+      var cancelled = !!x[3];
+      var isOut = !cancelled && !!out[x[0]];
+      return {
+        dow: x[1], date: x[2], cancelled: cancelled, reason: x[3] || '',
+        isOut: isOut, showIn: !cancelled && !isOut,
+        toggle: function () {
+          var next = Object.assign({}, self.state.out);
+          next[x[0]] = !next[x[0]];
+          self.setState({ out: next });
+        }
+      };
+    });
+    var n = rows.filter(function (r) { return r.isOut; }).length;
+    return {
+      rows: rows,
+      countText: n === 0 ? 'Keine Abmeldung' : (n === 1 ? '1 Abmeldung' : n + ' Abmeldungen')
+    };
+  }
+}
+</script>
+</body>
+</html>

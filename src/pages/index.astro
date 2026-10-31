@@ -1,0 +1,30 @@
+---
+// Parent season page (mockup: Main.dc.html). Without a valid family cookie it explains how to
+// get in: through the personal link.
+import Base from '../layouts/Base.astro';
+import SeasonView from '../components/SeasonView.tsx';
+import { getDb } from '../lib/db/index.ts';
+import { loadSeason } from '../lib/season.ts';
+
+const { guardian } = Astro.locals;
+const children = guardian ? await loadSeason(await getDb(), guardian.id) : [];
+const invalidLink = Astro.url.searchParams.get('link') === 'ungueltig';
+---
+
+<Base title="Unsere Termine · Bretten Kangaroos" who={guardian?.name}>
+  {guardian ? (
+    <SeasonView client:load guardianName={guardian.name} initialChildren={children} />
+  ) : (
+    <div class="flex flex-col gap-3 bg-chalk px-4 py-7">
+      <p class="label">Teamplaner</p>
+      <h1 class="heading text-4xl leading-tight">
+        {invalidLink ? 'Link ungültig' : 'Bitte über deinen Link öffnen'}
+      </h1>
+      <p>
+        {invalidLink
+          ? 'Dieser Link funktioniert nicht (mehr). Vielleicht wurde er erneuert – frag bitte beim Trainer nach.'
+          : 'Jede Familie hat einen persönlichen Link zu ihren Terminen. Du findest ihn in der Mail vom Trainer.'}
+      </p>
+    </div>
+  )}
+</Base>
