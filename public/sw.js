@@ -8,7 +8,7 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(message.title || 'Bretten Kangaroos', {
       body: message.body,
       tag: message.tag,
-      icon: '/crest.png',
+      icon: '/icon-192.png',
       badge: '/crest.png',
       data: { url: message.url || '/' },
     }),

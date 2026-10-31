@@ -10,15 +10,19 @@ export const GET: APIRoute = ({ url, cookies }) => {
   const home = coach ? '/trainer' : '/';
   const manifest = {
     id: home,
-    name: coach ? 'Kangaroos Trainer' : 'Kangaroos Termine',
-    short_name: coach ? 'Trainer' : 'Kangaroos',
+    name: coach ? 'Kangaroos Trainer' : 'Kangaroos Teamplaner',
+    short_name: coach ? 'Kangaroos Trainer' : 'Kangaroos Teamplaner',
     lang: 'de',
     start_url: token ? `${coach ? '/t/' : '/f/'}${encodeURIComponent(token)}` : home,
     scope: '/',
     display: 'standalone',
     background_color: '#FFFFFF',
     theme_color: '#23461E',
-    icons: [{ src: '/crest.png', sizes: '512x512', type: 'image/png', purpose: 'any' }],
+    // White background: the crest is mostly white and vanishes on dark home screens
+    icons: [
+      { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+    ],
   };
   return new Response(JSON.stringify(manifest), {
     headers: {
