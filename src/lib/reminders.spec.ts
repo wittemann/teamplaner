@@ -63,11 +63,34 @@ afterEach(() => close());
 
 describe('planReminders', () => {
   it('reminds 7 days and 1 day before the deadline, not in between', async () => {
-    expect(await planReminders(db, { mode: 'due' }, NOW)).toHaveLength(1);
+    const send = async () => {};
+    expect(
+      await sendReminders(db, { mode: 'due' }, { origin: ORIGIN, key: KEY, send }, NOW),
+    ).toHaveLength(1);
     const in3Days = new Date('2027-04-04T15:00:00Z');
     expect(await planReminders(db, { mode: 'due' }, in3Days)).toEqual([]);
+    // From the second reminder on, both parents get it
     const dayBefore = new Date('2027-04-07T15:00:00Z');
-    expect(await planReminders(db, { mode: 'due' }, dayBefore)).toHaveLength(1);
+    expect(await planReminders(db, { mode: 'due' }, dayBefore)).toHaveLength(2);
+  });
+
+  it('catches up at once on a game added less than 7 days before its deadline', async () => {
+    await db.query('DELETE FROM event');
+    // Added on Thursday 1 April, deadline Tuesday 6 April
+    game = await addGame('2027-04-08T15:00:00Z', '2027-04-06T18:00:00Z');
+    const send = async () => {};
+    const run = (now: Date) =>
+      sendReminders(db, { mode: 'due' }, { origin: ORIGIN, key: KEY, send }, now);
+    expect(await run(NOW)).toHaveLength(1);
+    expect(await run(new Date('2027-04-02T15:00:00Z'))).toEqual([]);
+    expect(await run(new Date('2027-04-05T15:00:00Z'))).toHaveLength(2);
+  });
+
+  it('catches up a day the cron missed, but not after the deadline', async () => {
+    const twoDaysLate = new Date('2027-04-03T15:00:00Z');
+    expect(await planReminders(db, { mode: 'due' }, twoDaysLate)).toHaveLength(1);
+    const afterDeadline = new Date('2027-04-08T19:00:00Z');
+    expect(await planReminders(db, { mode: 'due' }, afterDeadline)).toEqual([]);
   });
 
   it('sends the first reminder to one parent, later ones to both, at most one a day', async () => {
@@ -153,6 +176,15 @@ describe('teamReminderPlan', () => {
     expect((await plan(NOW)).map((e) => [e.day, e.status, e.detail])).toEqual([
       ['2027-04-01', 'sent', '1 Kind, 1 Elternteil'],
       ['2027-04-07', 'planned', 'Sa 10.04. vs. Karlsruhe · 1 offen'],
+    ]);
+  });
+
+  it('plans the first reminder of a late game for the next run', async () => {
+    await db.query('DELETE FROM event');
+    await addGame('2027-04-08T15:00:00Z', '2027-04-06T18:00:00Z');
+    expect((await plan(NOW)).map((e) => [e.day, e.what])).toEqual([
+      ['2027-04-01', '5 Tage vor dem Stichtag'],
+      ['2027-04-05', '1 Tag vor dem Stichtag'],
     ]);
   });
 

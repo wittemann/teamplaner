@@ -52,7 +52,8 @@ Trainer können im Trainerbereich selbst Termine anlegen, bearbeiten und absagen
 Familien mit Zusage). Über `PATCH /events/<id>` geht keine Mail raus – bei Verlegungen per API die Familien
 selbst informieren oder Martin auf den Trainerbereich verweisen.
 
-Erinnerungen: Der Cron schickt sie automatisch 7 Tage und 1 Tag vor dem Stichtag. Zum Saisonstart (ca. 3 Tage
+Erinnerungen: Der Cron schickt sie automatisch 7 Tage und 1 Tag vor dem Stichtag; bei spät angelegten Spielen
+kommt die erste beim nächsten Lauf. Zum Saisonstart (ca. 3 Tage
 nach dem Versand der Links) oder auf Wunsch: erst `dryRun: true`, Martin die Liste zeigen, nach OK ohne
 `dryRun` senden. Höchstens eine Erinnerung pro Elternteil und Tag.
 

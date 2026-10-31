@@ -122,6 +122,9 @@ Umsetzung (2026-10-31):
   `/api/cron/reminders`, abgesichert mit `CRON_SECRET` – **ohne die Variable verschickt der Cron nichts**.
 - Plan: 7 Tage und 1 Tag vor dem Stichtag (ohne Stichtag: vor dem Spieltag) – für Kinder mit einem offenen
   Spiel, das dann fällig ist. Die Mail listet alle offenen Spiele des Kindes.
+- Spät angelegte Spiele (Stichtag in weniger als 7 Tagen): Die erste Erinnerung kommt beim nächsten Cron-Lauf,
+  sofern es zu dem Spiel in den letzten 7 Tagen vor dem Stichtag noch keine gab (auch ein ausgefallener
+  Cron-Tag wird so nachgeholt). Danach wie gewohnt 1 Tag vorher.
 - „3 Tage nach dem Saison-Link“ gibt es nicht automatisch (die App weiß nicht, wann die Links verschickt
   wurden): Claude schickt sie über die Admin-API (`POST /reminders`, Modus `all` = alle mit offenen Spielen).
 - Erste Erinnerung zu einem Kind an einen Elternteil, jede weitere an alle Eltern des Kindes. Höchstens

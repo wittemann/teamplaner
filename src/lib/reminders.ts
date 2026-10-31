@@ -1,5 +1,6 @@
 // Reminder mails to families with open games (docs/tech.md, "Automatische Erinnerungen").
-// - "due" (daily cron): children with an open game whose deadline is in 7 days or tomorrow
+// - "due" (daily cron): children with an open game whose deadline is tomorrow, or at most 7 days
+//   away without a reminder about it yet in that time (a game added late is caught up at once)
 // - "all" (Admin API, e.g. 3 days after the season links went out): every child with open games
 // The first reminder about a child goes to one parent; if it stays open, later ones go to all
 // its parents. At most one reminder per parent a day; nothing once all games are answered.
@@ -38,8 +39,8 @@ export type Reminder = {
   children: ReminderChild[];
 };
 
-/** Deadline reminders this many days before the deadline (Berlin days) */
-export const DUE_DAYS = [7, 1];
+/** First reminder this many days before the deadline (later for late games); last one the day before */
+export const FIRST_DAYS = 7;
 /** A parent gets no second reminder within this time */
 const PAUSE_HOURS = 20;
 
@@ -61,7 +62,6 @@ export async function planReminders(
   now = new Date(),
 ) {
   const today = isoDay(now.toISOString());
-  const dueDays = new Set(DUE_DAYS.map((days) => addDays(today, days)));
 
   const guardians = await db.query<{
     id: string;
@@ -99,6 +99,28 @@ export async function planReminders(
     ).map((row) => row.player_id),
   );
 
+  // Last reminder day per child and game, to catch up on games that came in late
+  const remindedOn = new Map(
+    (
+      await db.query<{ player_id: string; event_id: string; sent_at: Date }>(
+        `SELECT p.player_id, e.event_id, max(rm.sent_at) AS sent_at
+           FROM reminder_mail rm, unnest(rm.player_ids) p(player_id), unnest(rm.event_ids) e(event_id)
+          GROUP BY p.player_id, e.event_id`,
+      )
+    ).map((row) => [
+      `${row.player_id} ${row.event_id}`,
+      isoDay(new Date(row.sent_at).toISOString()),
+    ]),
+  );
+  const isDue = (playerId: string, game: SeasonEvent) => {
+    const day = answerDay(game);
+    if (day === addDays(today, 1)) return true;
+    if (day < today || day > addDays(today, FIRST_DAYS)) return false;
+    if (new Date(game.respondBy ?? game.startsAt) <= now) return false;
+    const last = remindedOn.get(`${playerId} ${game.id}`);
+    return !last || last < addDays(day, -FIRST_DAYS);
+  };
+
   const teams = options.teamId
     ? await db.query<{ name: string; season: number }>(
         'SELECT name, season FROM team WHERE id = $1',
@@ -115,7 +137,7 @@ export async function planReminders(
         continue;
       const open = child.games.filter((g) => isOpen(g) && new Date(g.startsAt) > now);
       if (open.length === 0) continue;
-      if (options.mode === 'due' && !open.some((g) => dueDays.has(answerDay(g)))) continue;
+      if (options.mode === 'due' && !open.some((g) => isDue(child.playerId, g))) continue;
       const first = !remindedBefore.has(child.playerId);
       if (first && parents.get(child.playerId)?.[0] !== guardian.id) continue;
       children.push({
@@ -301,9 +323,10 @@ export async function teamReminderPlan(
     guardian_id: string;
     kind: 'due' | 'manual';
     player_ids: string[];
+    event_ids: string[];
     sent_at: Date;
   }>(
-    `SELECT guardian_id, kind, player_ids, sent_at FROM reminder_mail
+    `SELECT guardian_id, kind, player_ids, event_ids, sent_at FROM reminder_mail
       WHERE event_ids && ARRAY(SELECT id FROM event WHERE team_id = $1)
       ORDER BY sent_at`,
     [teamId],
@@ -312,8 +335,11 @@ export async function teamReminderPlan(
     string,
     { day: string; kind: string; parents: Set<string>; children: Set<string> }
   >();
+  // Last reminder day per game, for the first reminder of games that came in late
+  const remindedOn = new Map<string, string>();
   for (const row of rows) {
     const day = isoDay(new Date(row.sent_at).toISOString());
+    for (const id of row.event_ids) remindedOn.set(id, day);
     const key = `${day} ${row.kind}`;
     const entry = sent.get(key) ?? { day, kind: row.kind, parents: new Set(), children: new Set() };
     entry.parents.add(row.guardian_id);
@@ -331,17 +357,28 @@ export async function teamReminderPlan(
   // The cron runs once in the afternoon: today only counts while nothing went out yet
   const today = isoDay(now.toISOString());
   const sentToday = sent.has(`${today} due`);
+  const nextRun = sentToday ? addDays(today, 1) : today;
   for (const game of overview.events) {
     if (!needsAnswer(game.type) || game.cancelled || new Date(game.startsAt) <= now) continue;
     const open = groupByStatus(game, overview.players, overview.answers).open.length;
     if (open === 0) continue;
     const by = game.respondBy ? 'Stichtag' : 'Spiel';
-    for (const days of DUE_DAYS) {
-      const day = addDays(isoDay(game.respondBy ?? game.startsAt), -days);
-      if (day < today || (day === today && sentToday)) continue;
+    const answerBy = isoDay(game.respondBy ?? game.startsAt);
+    const dayBefore = addDays(answerBy, -1);
+    const firstFrom = addDays(answerBy, -FIRST_DAYS);
+    const last = remindedOn.get(game.id);
+    // The first one on the 7th day before, or at the next run if the game came later
+    const first = firstFrom > nextRun ? firstFrom : nextRun;
+    const days = [
+      ...((!last || last < firstFrom) && first !== dayBefore && first <= answerBy ? [first] : []),
+      ...(dayBefore >= nextRun ? [dayBefore] : []),
+    ];
+    for (const day of days) {
+      const before = Math.round((Date.parse(answerBy) - Date.parse(day)) / 86_400_000);
       entries.push({
         day,
-        what: `${plural(days, '1 Tag', '# Tage')} vor dem ${by}`,
+        what:
+          before === 0 ? `Am Tag des ${by}s` : `${plural(before, '1 Tag', '# Tage')} vor dem ${by}`,
         detail: `${weekday(game.startsAt)} ${shortDate(game.startsAt)} ${game.title} · ${open} offen`,
         status: 'planned',
       });
