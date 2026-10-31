@@ -20,7 +20,11 @@
     "format:check": "prettier --check .",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
-    "db:reset": "node --env-file-if-exists=.env scripts/db-reset.ts"
+    "db:reset": "node scripts/db-reset.ts",
+    "db:migrate": "node scripts/db-migrate.ts",
+    "db:seed": "node scripts/db-seed.ts",
+    "db:migrate:neon": "node --env-file=.env.neon scripts/db-migrate.ts",
+    "db:seed:neon": "node --env-file=.env.neon scripts/db-seed.ts"
   },
   "allowScripts": {
     "esbuild": true

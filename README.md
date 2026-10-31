@@ -58,7 +58,11 @@ npm run dev        # http://localhost:4321/f/dev-mueller (Familie mit 2 Kindern)
 ```
 
 Ohne `DATABASE_URL` läuft die App gegen eine eingebettete Postgres-Datenbank (PGlite), es muss nichts
-installiert werden. `db:reset` nicht parallel zu `npm run dev` ausführen (Datei-Sperre).
+installiert werden. Danach `npm run dev` neu starten (die laufende App hält die alte Datei offen).
+
+**Neon (Produktion):** Verbindung in `.env.neon` (nicht `.env`, sonst schreibt auch `npm run dev` dorthin).
+Schema-Änderungen = neue Datei in `db/migrations/`, dann `npm run db:migrate:neon`.
+`npm run db:seed:neon` füllt eine leere Datenbank mit Testdaten (zufällige Links).
 Prüfen: `npm test`, `npm run check`, `npm run lint`.
 
 ## Leitplanken

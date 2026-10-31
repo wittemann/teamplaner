@@ -1,3 +1,4 @@
+-- Migrations run in file-name order (npm run db:migrate); never change one that has run on Neon.
 -- Tables for the parent season view (docs/data-model.md). Coaches, reminders, absences, holidays
 -- and push subscriptions follow with the features that need them.
 
