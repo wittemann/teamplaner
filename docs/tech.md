@@ -16,7 +16,7 @@ steht unten unter „Verworfen“.
 | Datenbank     | **Postgres bei Neon** über den Vercel Marketplace, Region Frankfurt                          | kostenloser Plan reicht weit (Daten pro Saison: wenige hundert KB) |
 | Adresse       | **`team.bretten-kangaroos.net`** (Subdomain, DNS-Eintrag bei IONOS → Vercel)                 |                                                                    |
 | Optik         | Farben, Schriften, Wappen aus der Homepage übernehmen (`src/config/theme.json`, `crest.png`) | Tailwind wie auf der Homepage                                      |
-| Mail          | **IONOS-SMTP** per `nodemailer` (Absender `@bretten-kangaroos.net`)                          | kein neues Konto; Alternative: Resend                              |
+| Mail          | **IONOS-SMTP** per `nodemailer` (Absender `@bretten-kangaroos.net`)                          | `SMTP_*`-Variablen; ohne `SMTP_HOST` lokal nur in die Konsole      |
 | Push          | `web-push` (Node), VAPID-Schlüssel als Vercel-Umgebungsvariablen                             |                                                                    |
 | Zeitgesteuert | **Vercel Cron** (Hobby: 1× täglich)                                                          | reicht für Erinnerungen                                            |
 | Spielplan     | Claude legt die Spiele einmal pro Saison aus dem BSM an (siehe unten)                        | kein BSM-Code in der App                                           |
@@ -143,6 +143,12 @@ Während der Saison:
 - **Eltern:** persönlicher Link `team.bretten-kangaroos.net/f/<token>` mit langem Zufallstoken.
   Beim ersten Aufruf setzt der Server ein Cookie (httpOnly) und leitet auf `/` weiter – das Token
   steht danach nicht mehr in der Adresszeile. Token rotierbar, falls ein Link weitergegeben wurde.
+- **„Link verloren?“** (`/link`, entschieden 2026-10-31): schickt **denselben** Link noch einmal, damit
+  andere Geräte und das Kalender-Abo weiterlaufen. Dafür liegt der Link zusätzlich verschlüsselt in der
+  Datenbank (AES-256-GCM, Schlüssel `LINK_KEY` nur in Vercel) – ein Datenbank-Leck allein verrät keine Links.
+  Links von vor dieser Änderung werden beim nächsten Öffnen verschlüsselt abgelegt; ist keiner lesbar,
+  gibt es einen neuen Link. Höchstens eine Mail pro Person in 10 Minuten; die Seite antwortet immer
+  gleich, egal ob die Adresse bekannt ist. Gilt auch für Trainer.
 - **Trainer:** vorerst wie die Eltern ein persönlicher Link `/t/<token>` (Claude legt ihn per Admin-API an) → Cookie. Magic-Link per Mail folgt mit dem Mailversand. 4 Trainer (Martin + 3), je einem oder beiden Teams zugeordnet; Admins sehen alle Teams.
 - **Claude:** ein Admin-Token (nur Martin) im `Authorization`-Header, auf dem Server nur gehasht gespeichert (`ADMIN_TOKEN_HASH`). Endpunkte und Abläufe: Skill `.claude/skills/teamplaner-admin/SKILL.md`.
 

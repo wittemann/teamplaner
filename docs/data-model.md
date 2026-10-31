@@ -15,7 +15,7 @@ Team ──< TeamMember >── Player ──< Guardianship >── Family/Guard
 
 **TeamMember** – team_id, player_id, active
 
-**Guardian** (Elternteil) – id, name, email, phone? (optional, nur für den persönlichen WhatsApp-Anstoß), access_token_hash (SHA-256 des Tokens im persönlichen Link; das Token selbst wird nicht gespeichert, rotierbar)
+**Guardian** (Elternteil) – id, name, email, phone? (optional, nur für den persönlichen WhatsApp-Anstoß), access_token_hash (SHA-256 des Tokens im persönlichen Link, rotierbar), access_token_sealed? (derselbe Link verschlüsselt, für „Link verloren?“), link_mailed_at?
 
 **Reminder** (Erinnerungsplan) – id, team_id, kind (season_start | before_deadline_7 | before_deadline_1 | manual), planned_at, sent_at?, recipients[] (guardian_id + Kanal push|mail)
 → Cronjob verschickt fällige Erinnerungen nur an Familien mit offenen Spielen; hat ein Elternteil auf die letzte nicht reagiert, geht die nächste an den anderen Elternteil.
@@ -24,7 +24,7 @@ Team ──< TeamMember >── Player ──< Guardianship >── Family/Guard
 
 **Guardianship** – guardian_id, player_id
 
-**Coach** – id, name, email, is_admin, access_token_hash (persönlicher Trainer-Link); Teams über **CoachTeam** (coach_id, team_id)
+**Coach** – id, name, email, is_admin, access_token_hash (persönlicher Trainer-Link), access_token_sealed?, link_mailed_at?; Teams über **CoachTeam** (coach_id, team_id)
 → eigene Tabelle, Trainer sind nie Spieler.
 
 **Event**

@@ -47,6 +47,9 @@ Zeiten als ISO mit Offset, deutsche Zeit: Sommer `+02:00`, Winter `+01:00`.
 
 Fehler: 401 = Token falsch, 400 = `issues` (zod) zeigen das falsche Feld, 404 = ID unbekannt.
 
+Link verloren? Nicht erneuern, sondern auf `https://team.bretten-kangaroos.net/link` verweisen – dort kommt
+derselbe Link per Mail. Erneuern nur, wenn ein Link weitergegeben wurde (der alte hört dann auf zu gehen).
+
 ## Abläufe
 
 **Saison aus dem BSM anlegen** (einmal pro Saison, siehe `docs/tech.md` „Spielplan aus dem BSM“):

@@ -1,9 +1,10 @@
 // POST { name, email, phone?, players: [...] }: a parent with new or existing children.
-// Returns the personal link once; it is not stored anywhere.
+// Returns the personal link once (the database keeps only its hash and an encrypted copy).
+import { LINK_KEY } from 'astro:env/server';
 import { createFamily, familyInput } from '../../../lib/admin/data.ts';
 import { adminRoute, body, linkFor } from '../../../lib/admin/route.ts';
 
 export const POST = adminRoute(async (context, db) => {
-  const { token, ...family } = await createFamily(db, await body(context, familyInput));
+  const { token, ...family } = await createFamily(db, await body(context, familyInput), LINK_KEY);
   return { ...family, link: linkFor(context, 'f', token) };
 });

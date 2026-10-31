@@ -2,6 +2,7 @@
 // Parent season page (mockup: Main.dc.html). Without a valid family cookie it explains how to
 // get in: through the personal link.
 import Base from '../layouts/Base.astro';
+import { LINK_KEY } from 'astro:env/server';
 import SeasonView from '../components/SeasonView.tsx';
 import { getDb } from '../lib/db/index.ts';
 import holidays from '../data/holidays-bw.json';
@@ -9,6 +10,7 @@ import { listAbsences } from '../lib/absence.ts';
 import { calendarToken, rememberCalendarToken } from '../lib/calendar.ts';
 import { FAMILY_COOKIE } from '../lib/cookie.ts';
 import { isoDay } from '../lib/format.ts';
+import { rememberLink } from '../lib/lost-link.ts';
 import { loadSeason } from '../lib/season.ts';
 
 const { guardian } = Astro.locals;
@@ -22,6 +24,7 @@ const accessToken = Astro.cookies.get(FAMILY_COOKIE)?.value;
 let calendarUrl: string | undefined;
 if (guardian && db && accessToken) {
   await rememberCalendarToken(db, guardian.id, accessToken);
+  await rememberLink(db, 'guardian', guardian.id, accessToken, LINK_KEY);
   calendarUrl = new URL(`/kalender/${calendarToken(accessToken)}.ics`, Astro.url).href;
 }
 const invalidLink = Astro.url.searchParams.get('link') === 'ungueltig';
@@ -46,8 +49,11 @@ const invalidLink = Astro.url.searchParams.get('link') === 'ungueltig';
       </h1>
       <p>
         {invalidLink
-          ? 'Dieser Link funktioniert nicht (mehr). Vielleicht wurde er erneuert – frag bitte beim Trainer nach.'
+          ? 'Dieser Link funktioniert nicht (mehr). Vielleicht wurde er erneuert.'
           : 'Jede Familie hat einen persönlichen Link zu ihren Terminen. Du findest ihn in der Mail vom Trainer.'}
+      </p>
+      <p>
+        <a href="/link">Link verloren? Hier neu anfordern</a>
       </p>
     </div>
   )}

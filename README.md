@@ -49,9 +49,10 @@ tippen **„Bei allen dabei“** und nehmen nur die Ausnahmen raus – fertig in
 - [x] Vercel-Projekt (fra1) + Neon-Datenbank (Frankfurt), Testdaten online
 - [x] Subdomain `team.bretten-kangaroos.net` (A-Record bei IONOS → Vercel, 2026-10-31)
 - [x] Trainer-Ansicht (Übersicht mit Matrix, Termin mit Listen + Hinweis + WhatsApp-Text) + Admin-API für Claude
-- [ ] Mail + Web Push (Erinnerungen, Hinweis-Benachrichtigung, späte Änderungen an Trainer)
+- [x] Mailversand (IONOS-SMTP) – noch ohne Postfach/Zugangsdaten in Vercel
+- [ ] Erinnerungs-Mails, Web Push (Hinweis-Benachrichtigung, späte Änderungen an Trainer)
 - [x] Eltern: Abwesenheit (mit Ferien-Schnellauswahl), Ferienfrage, Kalender-Abo
-- [ ] Eltern: „Link verloren?“
+- [x] Eltern + Trainer: „Link verloren?“ (`/link`)
 
 ## Entwicklung
 
@@ -62,7 +63,7 @@ npm run dev        # http://localhost:4321/f/dev-mueller (Familie mit 2 Kindern)
                    # http://localhost:4321/t/dev-trainer (Trainerbereich)
 ```
 
-Ohne `DATABASE_URL` läuft die App gegen eine eingebettete Postgres-Datenbank (PGlite), es muss nichts
+Mails landen lokal in der Konsole von `npm run dev`. Ohne `DATABASE_URL` läuft die App gegen eine eingebettete Postgres-Datenbank (PGlite), es muss nichts
 installiert werden. Danach `npm run dev` neu starten (die laufende App hält die alte Datei offen).
 
 **Neon (Produktion):** Verbindung in `.env.neon` (nicht `.env`, sonst schreibt auch `npm run dev` dorthin).

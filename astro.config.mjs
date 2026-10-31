@@ -37,6 +37,16 @@ export default defineConfig({
       DATABASE_URL: envField.string({ context: 'server', access: 'secret', optional: true }),
       // SHA-256 (hex) of the Admin-API token Claude uses. Without it the Admin API answers 401.
       ADMIN_TOKEN_HASH: envField.string({ context: 'server', access: 'secret', optional: true }),
+      // 32 random bytes (base64url) to store personal links encrypted, so "Link verloren?" can mail
+      // them again (src/lib/token.ts). Without it a lost link is replaced by a new one.
+      LINK_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+      // Mail through the club's IONOS mailbox. Without SMTP_HOST mails go to the console (dev only).
+      SMTP_HOST: envField.string({ context: 'server', access: 'secret', optional: true }),
+      SMTP_PORT: envField.number({ context: 'server', access: 'secret', default: 587 }),
+      SMTP_USER: envField.string({ context: 'server', access: 'secret', optional: true }),
+      SMTP_PASS: envField.string({ context: 'server', access: 'secret', optional: true }),
+      // e.g. "Bretten Kangaroos <teamplaner@bretten-kangaroos.net>"; default: SMTP_USER
+      MAIL_FROM: envField.string({ context: 'server', access: 'secret', optional: true }),
     },
   },
 });

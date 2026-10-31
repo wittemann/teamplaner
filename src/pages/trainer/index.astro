@@ -2,6 +2,7 @@
 // Coach overview of one team (mockup: Trainer-Uebersicht.dc.html): how many children confirmed
 // the season, the next game and training, the season matrix, late changes and a WhatsApp text.
 // Not yet: reminders and push status – they follow with mail and push.
+import { LINK_KEY } from 'astro:env/server';
 import Base from '../../layouts/Base.astro';
 import {
   confirmedPlayers,
@@ -11,14 +12,18 @@ import {
   whatsAppShareUrl,
 } from '../../lib/answers.ts';
 import { coachTeams, teamOverview } from '../../lib/coach.ts';
+import { COACH_COOKIE } from '../../lib/cookie.ts';
 import { getDb } from '../../lib/db/index.ts';
 import { shortDate, time, weekday } from '../../lib/format.ts';
+import { rememberLink } from '../../lib/lost-link.ts';
 import { needsAnswer } from '../../lib/season.ts';
 
 const { coach } = Astro.locals;
 const invalidLink = Astro.url.searchParams.get('link') === 'ungueltig';
 
 const db = await getDb();
+const coachToken = Astro.cookies.get(COACH_COOKIE)?.value;
+if (coach && coachToken) await rememberLink(db, 'coach', coach.id, coachToken, LINK_KEY);
 const teams = coach ? await coachTeams(db, coach) : [];
 const team = teams.find((t) => t.id === Astro.url.searchParams.get('team')) ?? teams[0];
 const data = team ? await teamOverview(db, team.id) : undefined;
@@ -62,6 +67,11 @@ const LABEL = { in: 'dabei', out: 'nicht dabei', open: 'offen' } as const;
           ? 'Dir ist noch kein Team zugeordnet. Bitte bei Martin melden.'
           : 'Der Trainerbereich öffnet sich über deinen persönlichen Trainer-Link.'}
       </p>
+      {!coach && (
+        <p>
+          <a href="/link">Link verloren? Hier neu anfordern</a>
+        </p>
+      )}
     </div>
   ) : (
     <>

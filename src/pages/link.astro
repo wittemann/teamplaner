@@ -1,0 +1,85 @@
+---
+// "Link verloren?" (mockup: Eltern-Link.dc.html): enter the e-mail address, get the personal link
+// again (lib/lost-link.ts). A plain form, works without JavaScript. Linked from the homepage.
+import { LINK_KEY } from 'astro:env/server';
+import { z } from 'astro/zod';
+import Base from '../layouts/Base.astro';
+import { getDb } from '../lib/db/index.ts';
+import { linksToMail, lostLinkMail } from '../lib/lost-link.ts';
+import { sendMail } from '../lib/mail.ts';
+
+let state: 'form' | 'sent' | 'invalid' | 'failed' = 'form';
+let email = '';
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  email = String(form.get('email') ?? '').trim();
+  const parsed = z.email().max(200).safeParse(email);
+  if (!parsed.success) {
+    state = 'invalid';
+  } else {
+    try {
+      // Same answer for unknown addresses: the page must not tell who is in the club
+      const links = await linksToMail(await getDb(), parsed.data, LINK_KEY);
+      if (links.length > 0) {
+        await sendMail({ to: parsed.data, ...lostLinkMail(links, Astro.url.origin) });
+      }
+      state = 'sent';
+    } catch (error) {
+      console.error('Link verloren: sending failed', error);
+      state = 'failed';
+    }
+  }
+}
+---
+
+<Base title="Link verloren? · Bretten Kangaroos">
+  <div class="bg-chalk px-4 pt-7 pb-5.5">
+    <p class="label mb-1.5">Teamplaner</p>
+    <h1 class="heading text-4xl leading-tight">Link verloren?</h1>
+    <p class="mt-2.5 text-ink/85">
+      Gib die E-Mail-Adresse ein, die beim Verein hinterlegt ist. Wir schicken dir deinen
+      persönlichen Link sofort neu.
+    </p>
+  </div>
+  <form method="post" class="flex flex-col gap-4 px-4 py-6">
+    <label class="flex flex-col gap-1.5 font-semibold text-ink">
+      E-Mail-Adresse
+      <input
+        type="email"
+        name="email"
+        required
+        maxlength="200"
+        value={email}
+        placeholder="name@beispiel.de"
+        autocomplete="email"
+        aria-invalid={state === 'invalid' ? 'true' : undefined}
+        class="min-h-13 rounded border-2 border-pill px-3.5 text-[17px] font-normal text-ink"
+      />
+    </label>
+    {state === 'invalid' && (
+      <p role="alert" class="text-rust">
+        Das sieht nicht nach einer E-Mail-Adresse aus.
+      </p>
+    )}
+    <button
+      type="submit"
+      class="min-h-13 w-full rounded bg-rust font-condensed text-xl font-semibold tracking-[0.04em] text-white uppercase hover:bg-rust-dark"
+    >
+      Link schicken
+    </button>
+    {state === 'sent' && (
+      <div role="status" class="rounded-md bg-success-bg px-4 py-3.5 leading-snug text-ink">
+        <strong>Unterwegs!</strong> Wenn die Adresse bei uns hinterlegt ist, kommt der Link in
+        wenigen Minuten. Schau auch im Spam-Ordner nach.
+      </div>
+    )}
+    {state === 'failed' && (
+      <div role="alert" class="rounded-md bg-note-bg px-4 py-3.5 leading-snug text-ink">
+        <strong>Das hat nicht geklappt.</strong> Bitte versuch es später noch einmal.
+      </div>
+    )}
+    <p class="text-[15px] text-text-light">
+      Keine Mail bekommen? Sprich deinen Trainer an – er kann die Adresse prüfen.
+    </p>
+  </form>
+</Base>

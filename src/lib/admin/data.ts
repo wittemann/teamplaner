@@ -5,7 +5,7 @@ import { applyAbsencesToEvents } from '../absence.ts';
 import { groupByStatus } from '../answers.ts';
 import { playerName, teamOverview, type CoachEvent } from '../coach.ts';
 import type { Db } from '../db/client.ts';
-import { hashToken, newAccessToken } from '../token.ts';
+import { hashToken, newAccessToken, sealToken } from '../token.ts';
 import { NotFound } from './route.ts';
 
 const timestamp = z.iso.datetime({ offset: true });
@@ -218,12 +218,20 @@ export async function setResponse(db: Db, input: z.infer<typeof responseInput>) 
   return { saved: true };
 }
 
-/** Creates a parent with a new personal link; the token is returned once and never stored. */
-export async function createFamily(db: Db, input: z.infer<typeof familyInput>) {
+/**
+ * Creates a parent with a new personal link. The token is returned once; the database keeps its
+ * hash and, with the link key, an encrypted copy for "Link verloren?" (lib/token.ts).
+ */
+export async function createFamily(
+  db: Db,
+  input: z.infer<typeof familyInput>,
+  key: string | undefined,
+) {
   const token = newAccessToken();
   const [guardian] = await db.query<{ id: string }>(
-    'INSERT INTO guardian (name, email, phone, access_token_hash) VALUES ($1, $2, $3, $4) RETURNING id',
-    [input.name, input.email, input.phone ?? null, hashToken(token)],
+    `INSERT INTO guardian (name, email, phone, access_token_hash, access_token_sealed)
+     VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+    [input.name, input.email, input.phone ?? null, hashToken(token), sealToken(token, key)],
   );
   const playerIds: string[] = [];
   for (const player of input.players) {
@@ -250,11 +258,16 @@ export async function createFamily(db: Db, input: z.infer<typeof familyInput>) {
   return { guardianId: guardian.id, playerIds, token };
 }
 
-export async function createCoach(db: Db, input: z.infer<typeof coachInput>) {
+export async function createCoach(
+  db: Db,
+  input: z.infer<typeof coachInput>,
+  key: string | undefined,
+) {
   const token = newAccessToken();
   const [coach] = await db.query<{ id: string }>(
-    'INSERT INTO coach (name, email, is_admin, access_token_hash) VALUES ($1, $2, $3, $4) RETURNING id',
-    [input.name, input.email, input.isAdmin ?? false, hashToken(token)],
+    `INSERT INTO coach (name, email, is_admin, access_token_hash, access_token_sealed)
+     VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+    [input.name, input.email, input.isAdmin ?? false, hashToken(token), sealToken(token, key)],
   );
   for (const teamId of input.teamIds) {
     await db.query('INSERT INTO coach_team (coach_id, team_id) VALUES ($1, $2)', [
@@ -266,11 +279,16 @@ export async function createCoach(db: Db, input: z.infer<typeof coachInput>) {
 }
 
 /** New link for a parent or coach; the old one stops working at once. */
-export async function rotateToken(db: Db, table: 'guardian' | 'coach', id: string) {
+export async function rotateToken(
+  db: Db,
+  table: 'guardian' | 'coach',
+  id: string,
+  key: string | undefined,
+) {
   const token = newAccessToken();
   const rows = await db.query(
-    `UPDATE ${table} SET access_token_hash = $2 WHERE id = $1 RETURNING id`,
-    [id, hashToken(token)],
+    `UPDATE ${table} SET access_token_hash = $2, access_token_sealed = $3 WHERE id = $1 RETURNING id`,
+    [id, hashToken(token), sealToken(token, key)],
   );
   if (rows.length === 0) throw new NotFound(`${table} ${id}`);
   return token;
