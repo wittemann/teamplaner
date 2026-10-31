@@ -33,7 +33,7 @@ const manifest = coachArea ? '/manifest.webmanifest?bereich=trainer' : '/manifes
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta
       name="apple-mobile-web-app-title"
-      content={coachArea ? 'Kangaroos Trainer' : 'Kangaroos Teamplaner'}
+      content={coachArea ? 'Kangaroos Trainer' : 'Teamplaner'}
     />
     <Font cssVariable="--font-barlow" preload />
     <Font cssVariable="--font-barlow-condensed" preload />
@@ -55,5 +55,15 @@ const manifest = coachArea ? '/manifest.webmanifest?bereich=trainer' : '/manifes
     <main class:list={['mx-auto', wide ? 'max-w-6xl' : 'max-w-xl']}>
       <slot />
     </main>
+    <script>
+      // Tapped notification (public/sw.js): load the address fresh, even if it is this page
+      navigator.serviceWorker?.addEventListener('message', (event) => {
+        if (event.data?.type === 'open') location.assign(event.data.url);
+      });
+      // Back from memory (iPhone app switcher, back button): the answers may have changed since
+      window.addEventListener('pageshow', (event) => {
+        if (event.persisted) location.reload();
+      });
+    </script>
   </body>
 </html>

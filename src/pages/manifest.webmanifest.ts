@@ -11,7 +11,8 @@ export const GET: APIRoute = ({ url, cookies }) => {
   const manifest = {
     id: home,
     name: coach ? 'Kangaroos Trainer' : 'Kangaroos Teamplaner',
-    short_name: coach ? 'Kangaroos Trainer' : 'Kangaroos Teamplaner',
+    // Short: the iPhone cuts longer names on the home screen
+    short_name: coach ? 'Kangaroos Trainer' : 'Teamplaner',
     lang: 'de',
     start_url: token ? `${coach ? '/t/' : '/f/'}${encodeURIComponent(token)}` : home,
     scope: '/',
