@@ -63,7 +63,7 @@ Für Spiele dagegen **ausdrückliche** Zusage zu Saisonbeginn (keine Antwort = o
 - [x] Hinweis am Termin (für alle sichtbar, Push an die Zugesagten)
 - [x] Sehen, welche Familien keine Push-Benachrichtigungen aktiviert haben (Übersicht, „Ohne Benachrichtigung“)
 - [x] „In WhatsApp teilen“ mit fertigem Text + Link (Saisonstart, Erinnerung, Hinweis)
-- [ ] Automatischer Erinnerungsplan sichtbar (was wurde wann an wen geschickt, was ist geplant)
+- [x] Automatischer Erinnerungsplan sichtbar (was wurde wann an wen geschickt, was ist geplant)
 - [x] Persönlicher Anstoß: WhatsApp-Chat mit einer offenen Familie öffnen (nur wenn Telefonnummer hinterlegt)
 
 ### Eltern

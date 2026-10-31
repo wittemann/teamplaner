@@ -4,6 +4,8 @@
 // The first reminder about a child goes to one parent; if it stays open, later ones go to all
 // its parents. At most one reminder per parent a day; nothing once all games are answered.
 import { answerUrl } from './answer-link.ts';
+import { groupByStatus } from './answers.ts';
+import type { Answer, CoachEvent, TeamPlayer } from './coach.ts';
 import type { Db } from './db/client.ts';
 import { deadline, isoDay, shortDate, weekday } from './format.ts';
 import {
@@ -16,7 +18,7 @@ import {
 } from './mail-html.ts';
 import type { Mail } from './mail.ts';
 import { isOpen } from './season-state.ts';
-import { loadSeason, type SeasonEvent } from './season.ts';
+import { loadSeason, needsAnswer, type SeasonEvent } from './season.ts';
 
 export type ReminderMode = 'due' | 'all';
 
@@ -274,4 +276,76 @@ export async function sendReminders(
     }
   }
   return results;
+}
+
+export type PlanEntry = {
+  /** Berlin day, YYYY-MM-DD */
+  day: string;
+  what: string;
+  detail: string;
+  status: 'sent' | 'planned';
+};
+
+/**
+ * The reminder plan of one team for the coach area (mockup: Trainer-Uebersicht.dc.html): what went
+ * out (per day and kind) and what the cron will send, as long as the children stay open.
+ */
+export async function teamReminderPlan(
+  db: Db,
+  teamId: string,
+  overview: { players: TeamPlayer[]; events: CoachEvent[]; answers: Answer[] },
+  now = new Date(),
+) {
+  const playerIds = new Set(overview.players.map((p) => p.id));
+  const rows = await db.query<{
+    guardian_id: string;
+    kind: 'due' | 'manual';
+    player_ids: string[];
+    sent_at: Date;
+  }>(
+    `SELECT guardian_id, kind, player_ids, sent_at FROM reminder_mail
+      WHERE event_ids && ARRAY(SELECT id FROM event WHERE team_id = $1)
+      ORDER BY sent_at`,
+    [teamId],
+  );
+  const sent = new Map<
+    string,
+    { day: string; kind: string; parents: Set<string>; children: Set<string> }
+  >();
+  for (const row of rows) {
+    const day = isoDay(new Date(row.sent_at).toISOString());
+    const key = `${day} ${row.kind}`;
+    const entry = sent.get(key) ?? { day, kind: row.kind, parents: new Set(), children: new Set() };
+    entry.parents.add(row.guardian_id);
+    for (const id of row.player_ids) if (playerIds.has(id)) entry.children.add(id);
+    sent.set(key, entry);
+  }
+
+  const entries: PlanEntry[] = [...sent.values()].map((s) => ({
+    day: s.day,
+    what: s.kind === 'due' ? 'Erinnerung vor dem Stichtag' : 'Erinnerung an alle Offenen',
+    detail: `${plural(s.children.size, '1 Kind', '# Kinder')}, ${plural(s.parents.size, '1 Elternteil', '# Eltern')}`,
+    status: 'sent',
+  }));
+
+  // The cron runs once in the afternoon: today only counts while nothing went out yet
+  const today = isoDay(now.toISOString());
+  const sentToday = sent.has(`${today} due`);
+  for (const game of overview.events) {
+    if (!needsAnswer(game.type) || game.cancelled || new Date(game.startsAt) <= now) continue;
+    const open = groupByStatus(game, overview.players, overview.answers).open.length;
+    if (open === 0) continue;
+    const by = game.respondBy ? 'Stichtag' : 'Spiel';
+    for (const days of DUE_DAYS) {
+      const day = addDays(isoDay(game.respondBy ?? game.startsAt), -days);
+      if (day < today || (day === today && sentToday)) continue;
+      entries.push({
+        day,
+        what: `${plural(days, '1 Tag', '# Tage')} vor dem ${by}`,
+        detail: `${weekday(game.startsAt)} ${shortDate(game.startsAt)} ${game.title} · ${open} offen`,
+        status: 'planned',
+      });
+    }
+  }
+  return entries.sort((a, b) => a.day.localeCompare(b.day));
 }

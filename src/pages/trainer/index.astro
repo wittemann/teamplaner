@@ -1,8 +1,8 @@
 ---
 // Coach overview of one team (mockup: Trainer-Uebersicht.dc.html): how many children confirmed
 // the season, the next game and training, the season matrix, late changes, which children's
-// families have no notifications, and a WhatsApp text. Not yet: the reminder plan.
-import { LINK_KEY, VAPID_PUBLIC_KEY } from 'astro:env/server';
+// families have no notifications, a WhatsApp text and the reminder plan.
+import { CRON_SECRET, LINK_KEY, VAPID_PUBLIC_KEY } from 'astro:env/server';
 import PushSetup from '../../components/PushSetup.tsx';
 import Base from '../../layouts/Base.astro';
 import {
@@ -18,6 +18,7 @@ import { getDb } from '../../lib/db/index.ts';
 import { shortDate, time, weekday } from '../../lib/format.ts';
 import { rememberLink } from '../../lib/lost-link.ts';
 import { playersWithoutPush } from '../../lib/push.ts';
+import { teamReminderPlan } from '../../lib/reminders.ts';
 import { needsAnswer } from '../../lib/season.ts';
 
 const { coach } = Astro.locals;
@@ -30,6 +31,7 @@ const teams = coach ? await coachTeams(db, coach) : [];
 const team = teams.find((t) => t.id === Astro.url.searchParams.get('team')) ?? teams[0];
 const data = team ? await teamOverview(db, team.id) : undefined;
 const noPush = team ? await playersWithoutPush(db, team.id) : new Set<string>();
+const reminderPlan = team && data ? await teamReminderPlan(db, team.id, data) : [];
 
 const games = data?.events.filter((e) => needsAnswer(e.type)) ?? [];
 const trainings = data?.events.filter((e) => !needsAnswer(e.type)).slice(0, 6) ?? [];
@@ -262,6 +264,42 @@ const LABEL = { in: 'dabei', out: 'nicht dabei', open: 'offen' } as const;
               </tbody>
             </table>
           </div>
+        </section>
+
+        <section>
+          <h2 class="heading text-[26px]">Automatische Erinnerungen</h2>
+          <p class="mb-3 text-[15px] text-text-light">
+            Per Mail, 7 Tage und 1 Tag vor dem Stichtag – nur an Familien mit offenen Spielen.
+            Reagiert ein Elternteil nicht, geht die nächste Erinnerung an alle Eltern des Kindes.
+            {!CRON_SECRET && ' Noch nicht eingeschaltet: Geplantes geht erst nach dem Start raus.'}
+          </p>
+          <ol class="border-t border-line md:max-w-3xl">
+            {reminderPlan.map((r) => (
+              <li class="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-line py-3">
+                <strong class="w-24 shrink-0 text-ink">
+                  {weekday(`${r.day}T12:00:00Z`)} {shortDate(`${r.day}T12:00:00Z`)}
+                </strong>
+                <span class="min-w-56 flex-1 text-ink">
+                  {r.what} <span class="text-[15px] text-text-light">{r.detail}</span>
+                </span>
+                <span
+                  class:list={[
+                    'rounded-full px-2.5 py-0.5 text-sm font-semibold',
+                    r.status === 'sent'
+                      ? 'bg-success-bg text-forest'
+                      : 'border border-pill bg-chalk text-text',
+                  ]}
+                >
+                  {r.status === 'sent' ? 'gesendet' : 'geplant'}
+                </span>
+              </li>
+            ))}
+            {reminderPlan.length === 0 && (
+              <li class="border-b border-line py-3 text-[15px]">
+                Nichts geplant – keine offenen Spiele.
+              </li>
+            )}
+          </ol>
         </section>
 
         <div class="grid gap-8 md:grid-cols-3">

@@ -4,7 +4,8 @@ import { answerToken, readAnswerToken } from './answer-link.ts';
 import type { Db } from './db/client.ts';
 import { createTestDb, insert } from './db/test-db.ts';
 import type { Mail } from './mail.ts';
-import { planReminders, reminderMail, sendReminders } from './reminders.ts';
+import { teamOverview } from './coach.ts';
+import { planReminders, reminderMail, sendReminders, teamReminderPlan } from './reminders.ts';
 import { hashToken, sealToken } from './token.ts';
 
 const KEY = randomBytes(32).toString('base64url');
@@ -121,6 +122,57 @@ describe('planReminders', () => {
     );
     expect(result).toMatchObject({ sent: false, error: 'SMTP down' });
     expect(await db.query('SELECT * FROM reminder_mail')).toEqual([]);
+  });
+});
+
+describe('teamReminderPlan', () => {
+  const plan = async (now: Date) =>
+    teamReminderPlan(db, teamId, await teamOverview(db, teamId, now), now);
+
+  it('shows the planned reminders, then what was sent', async () => {
+    expect(await plan(NOW)).toEqual([
+      {
+        day: '2027-04-01',
+        what: '7 Tage vor dem Stichtag',
+        detail: 'Sa 10.04. vs. Karlsruhe · 1 offen',
+        status: 'planned',
+      },
+      {
+        day: '2027-04-07',
+        what: '1 Tag vor dem Stichtag',
+        detail: 'Sa 10.04. vs. Karlsruhe · 1 offen',
+        status: 'planned',
+      },
+    ]);
+    await sendReminders(
+      db,
+      { mode: 'due' },
+      { origin: ORIGIN, key: KEY, send: async () => {} },
+      NOW,
+    );
+    expect((await plan(NOW)).map((e) => [e.day, e.status, e.detail])).toEqual([
+      ['2027-04-01', 'sent', '1 Kind, 1 Elternteil'],
+      ['2027-04-07', 'planned', 'Sa 10.04. vs. Karlsruhe · 1 offen'],
+    ]);
+  });
+
+  it('plans nothing once every game is answered', async () => {
+    await db.query(
+      `INSERT INTO response (event_id, player_id, status, responded_by) VALUES ($1, $2, 'out', 'x')`,
+      [game, ella],
+    );
+    expect(await plan(NOW)).toEqual([]);
+  });
+
+  it('leaves out other teams’ reminders', async () => {
+    await sendReminders(
+      db,
+      { mode: 'all' },
+      { origin: ORIGIN, key: KEY, send: async () => {} },
+      NOW,
+    );
+    const other = await insert(db, 'team', { name: 'Jugend', season: 2027 });
+    expect(await teamReminderPlan(db, other, await teamOverview(db, other, NOW), NOW)).toEqual([]);
   });
 });
 

@@ -53,7 +53,7 @@ tippen **„Bei allen dabei“** und nehmen nur die Ausnahmen raus – fertig in
 - [x] Erinnerungs-Mails mit Antwort-Knöpfen (Cron täglich, Admin-API) – Cron erst aktiv mit `CRON_SECRET`
 - [x] Trainer: Termine anlegen, bearbeiten, absagen; verlegtes Spiel → Mail an Familien mit Zusage
 - [x] Mail an Trainer bei Änderung nach dem Stichtag
-- [ ] Erinnerungsplan im Trainerbereich
+- [x] Erinnerungsplan im Trainerbereich (gesendet + geplant)
 - [x] Web Push: Hinweis am Termin an Familien mit Zusage, späte Änderungen an Trainer (Push, sonst Mail), „Zum Home-Bildschirm“, Trainer sieht, wer keine Benachrichtigungen hat
 - [x] Eltern: Abwesenheit (mit Ferien-Schnellauswahl), Ferienfrage, Kalender-Abo
 - [x] Eltern + Trainer: „Link verloren?“ (`/link`)
