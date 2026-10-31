@@ -19,9 +19,8 @@ node scripts/admin.ts --neon GET "/events?team=<id>"      # Produktion: .env.neo
 node scripts/admin.ts --neon PATCH /events/<id> '{"coachNote":"Treffpunkt 9 Uhr"}'
 ```
 
-Produktion: `https://teamplaner-kappa.vercel.app` (später `team.bretten-kangaroos.net`, dann
-`ADMIN_BASE_URL` in `.env.neon` setzen). `.env.neon` enthält `ADMIN_TOKEN` und `VERCEL_BYPASS`
-(Vercel Authentication schützt `*.vercel.app`). Vercel kennt nur den Hash (`ADMIN_TOKEN_HASH`).
+Produktion: `https://team.bretten-kangaroos.net` (ohne Vercel-Schutz; `*.vercel.app` ist geschützt,
+dafür steht `VERCEL_BYPASS` in `.env.neon`). `.env.neon` enthält `ADMIN_TOKEN`. Vercel kennt nur den Hash (`ADMIN_TOKEN_HASH`).
 
 Tokens und Links **nie** in Commits, Docs oder Logs schreiben. Persönliche Links nur an Martin ausgeben.
 

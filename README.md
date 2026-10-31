@@ -47,7 +47,7 @@ tippen **„Bei allen dabei“** und nehmen nur die Ausnahmen raus – fertig in
 - [ ] Offene Punkte in [docs/open-questions.md](docs/open-questions.md) klären
 - [x] Projekt aufgesetzt (Astro, Tailwind, Preact) + Eltern-Saisonansicht (Spiele, Trainings, „Bei allen dabei“) – lokal mit Testdaten
 - [x] Vercel-Projekt (fra1) + Neon-Datenbank (Frankfurt), Testdaten online
-- [ ] Subdomain `team.bretten-kangaroos.net` – erst zum Start
+- [x] Subdomain `team.bretten-kangaroos.net` (A-Record bei IONOS → Vercel, 2026-10-31)
 - [x] Trainer-Ansicht (Übersicht mit Matrix, Termin mit Listen + Hinweis + WhatsApp-Text) + Admin-API für Claude
 - [ ] Mail + Web Push (Erinnerungen, Hinweis-Benachrichtigung, späte Änderungen an Trainer)
 - [x] Eltern: Abwesenheit (mit Ferien-Schnellauswahl), Ferienfrage, Kalender-Abo

@@ -19,7 +19,7 @@ if (!method || !path?.startsWith('/')) {
 
 process.loadEnvFile(neon ? '.env.neon' : '.env');
 const base = neon
-  ? (process.env.ADMIN_BASE_URL ?? 'https://teamplaner-kappa.vercel.app')
+  ? (process.env.ADMIN_BASE_URL ?? 'https://team.bretten-kangaroos.net')
   : 'http://localhost:4321';
 const headers: Record<string, string> = {
   authorization: `Bearer ${process.env.ADMIN_TOKEN}`,
