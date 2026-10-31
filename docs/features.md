@@ -58,6 +58,7 @@ Für Spiele dagegen **ausdrückliche** Zusage zu Saisonbeginn (keine Antwort = o
 - [x] Termin: Typ, Datum, Treffpunkt + Uhrzeit, Beginn, Ort (Maps-Link), Gegner (im Titel), Heim/Auswärts
 - [x] Übersicht pro Termin: dabei / nicht dabei / offen, mit Ampel (Mindestzahl)
 - [x] Saison-Matrix: Kinder × Termine
+- [x] Mail bei Änderung nach dem Stichtag (sofort; Push später)
 - [ ] Erinnerung an die Offenen (automatisch per Mail und über Claude erledigt; Knopf im Trainerbereich fehlt)
 - [ ] Hinweis am Termin (für alle sichtbar, Push an die Zugesagten) – sichtbar ja, Push fehlt
 - [ ] Sehen, welche Familien keine Push-Benachrichtigungen aktiviert haben

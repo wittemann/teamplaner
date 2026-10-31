@@ -76,6 +76,16 @@ Web Push – was es braucht:
 - Jedes Gerät meldet sich einzeln an (mehrere pro Elternteil möglich).
 - Hinweise am Termin und späte Änderungen werden **sofort** beim Speichern verschickt (kein Cron nötig).
 
+## Späte Änderungen an Trainer
+
+- Jede Stelle, an der Eltern speichern (Antippen, „Bei allen dabei“, Abwesenheit eintragen/löschen,
+  Knopf in der Mail), merkt sich vorher und nachher die Antworten zu Spielen, deren Stichtag vorbei ist
+  und die noch nicht begonnen haben (`lib/late-change.ts`). Was sich dort geändert hat, geht sofort per
+  Mail an die Trainer des Teams – eine Mail pro Trainer und Speichern, mit neuer Teamzahl und Link zum
+  Termin. Team ohne eigenen Trainer → an die Admins.
+- Eine fehlgeschlagene Mail blockiert die Antwort der Eltern nie (nur Fehlercode im Log).
+- Änderungen durch Claude (Admin-API) und durch Trainer lösen keine Mail aus.
+
 ## Direkt aus der Mail antworten
 
 - Jeder Knopf in der Mail ist ein Link mit eigenem Einmal-Token pro Kind + Spiel + Antwort.

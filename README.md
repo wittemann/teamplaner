@@ -52,7 +52,8 @@ tippen **„Bei allen dabei“** und nehmen nur die Ausnahmen raus – fertig in
 - [x] Mailversand (IONOS-SMTP, Absender teamplaner@bretten-kangaroos.net) – live seit 2026-10-31
 - [x] Erinnerungs-Mails mit Antwort-Knöpfen (Cron täglich, Admin-API) – Cron erst aktiv mit `CRON_SECRET`
 - [x] Trainer: Termine anlegen, bearbeiten, absagen; verlegtes Spiel → Mail an Familien mit Zusage
-- [ ] Mail an Trainer bei Änderung nach dem Stichtag; Erinnerungsplan im Trainerbereich
+- [x] Mail an Trainer bei Änderung nach dem Stichtag
+- [ ] Erinnerungsplan im Trainerbereich
 - [ ] Web Push (Hinweis-Benachrichtigung, späte Änderungen an Trainer)
 - [x] Eltern: Abwesenheit (mit Ferien-Schnellauswahl), Ferienfrage, Kalender-Abo
 - [x] Eltern + Trainer: „Link verloren?“ (`/link`)
