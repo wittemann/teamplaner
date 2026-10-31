@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dayOfMonth, deadline, month, shortDate, time, weekday } from './format.ts';
+import { dayOfMonth, deadline, longDate, month, shortDate, time, weekday } from './format.ts';
 
 describe('format', () => {
   // 09:30 in Berlin (summer time)
@@ -11,6 +11,7 @@ describe('format', () => {
     expect(month(iso)).toBe('Apr');
     expect(shortDate(iso)).toBe('17.04.');
     expect(time(iso)).toBe('9:30');
+    expect(longDate(iso)).toBe('Samstag, 17. April 2027');
   });
 
   it('writes full hours of a deadline without minutes', () => {

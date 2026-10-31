@@ -39,15 +39,18 @@ tippen **„Bei allen dabei“** und nehmen nur die Ausnahmen raus – fertig in
 | [mockup/canvas/](mockup/canvas/)                 | Klickbares Mockup (Claude Design): https://claude.ai/artifact/XgvhWom64h8uwr7DSxjNDY |
 | [docs/open-questions.md](docs/open-questions.md) | Offene Fragen                                                                        |
 
-## Stand & nächste Schritte (2026-10-29)
+## Stand & nächste Schritte (2026-10-31)
 
 - [x] Anforderungen, Datenmodell, Technik entschieden (Vercel, Neon, Astro mit Server-Rendering)
 - [x] Klickbares Mockup in Claude Design
-- [ ] Mockup mit den 3 anderen Trainern besprechen (Link im Canvas über „Share“ freigeben)
+- [x] Mockup an die Trainer geschickt – Rückmeldung: passt (2026-10-31)
 - [ ] Offene Punkte in [docs/open-questions.md](docs/open-questions.md) klären
 - [x] Projekt aufgesetzt (Astro, Tailwind, Preact) + Eltern-Saisonansicht (Spiele, Trainings, „Bei allen dabei“) – lokal mit Testdaten
-- [ ] Vercel-Projekt, Neon-Datenbank, Subdomain einrichten und erste Vorschau deployen
-- [ ] Trainer-Ansicht + Admin-API für Claude
+- [x] Vercel-Projekt (fra1) + Neon-Datenbank (Frankfurt), Testdaten online
+- [ ] Subdomain `team.bretten-kangaroos.net` – erst zum Start
+- [x] Trainer-Ansicht (Übersicht mit Matrix, Termin mit Listen + Hinweis + WhatsApp-Text) + Admin-API für Claude
+- [ ] Mail + Web Push (Erinnerungen, Hinweis-Benachrichtigung, späte Änderungen an Trainer)
+- [ ] Eltern: Abwesenheit, Ferienfrage, Kalender-Abo, „Link verloren?“
 
 ## Entwicklung
 
@@ -55,6 +58,7 @@ tippen **„Bei allen dabei“** und nehmen nur die Ausnahmen raus – fertig in
 npm install
 npm run db:reset   # lokale Datenbank (PGlite in .pglite/) mit Testdaten neu anlegen
 npm run dev        # http://localhost:4321/f/dev-mueller (Familie mit 2 Kindern)
+                   # http://localhost:4321/t/dev-trainer (Trainerbereich)
 ```
 
 Ohne `DATABASE_URL` läuft die App gegen eine eingebettete Postgres-Datenbank (PGlite), es muss nichts

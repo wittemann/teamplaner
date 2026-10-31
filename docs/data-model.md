@@ -24,7 +24,7 @@ Team ──< TeamMember >── Player ──< Guardianship >── Family/Guard
 
 **Guardianship** – guardian_id, player_id
 
-**Coach** – id, name, email, team_ids[], is_admin
+**Coach** – id, name, email, is_admin, access_token_hash (persönlicher Trainer-Link); Teams über **CoachTeam** (coach_id, team_id)
 → eigene Tabelle, Trainer sind nie Spieler.
 
 **Event**
@@ -50,7 +50,7 @@ Team ──< TeamMember >── Player ──< Guardianship >── Family/Guard
 
 **Event.coach_note** – Hinweis des Trainers am Termin („Treffpunkt geändert“), mit coach_note_updated_at
 
-Umgesetzt in `db/schema.sql` (bisher: Team, Player, TeamMember, Guardian, Guardianship, Event, Response).
+Umgesetzt in `db/migrations/` (bisher: Team, Player, TeamMember, Guardian, Guardianship, Event, Response, Coach, CoachTeam).
 
 Admin-Token für Claude: nur ein Hash in der Server-Konfiguration, keine eigene Tabelle.
 

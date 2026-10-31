@@ -1,6 +1,6 @@
 // npm run db:seed – fills an empty database with demo data and prints parent links.
 // Locally the tokens are readable (dev-mueller); on Neon they are random, since the app is online.
-import { newAccessToken } from '../src/lib/token.ts';
+import { hashToken, newAccessToken } from '../src/lib/token.ts';
 import { seedDemo } from './lib/demo-data.ts';
 import { openScriptDb } from './lib/script-db.ts';
 
@@ -20,6 +20,15 @@ try {
   console.log('Demo data added. Parent links, e.g.:');
   for (const name of ['Müller', 'Schmidt', 'Schulz']) {
     console.log(`  ${name}: ${BASE_URL}/f/${tokens.get(name)}`);
+  }
+  // A demo coach for both teams, locally only; real coaches come through the Admin API
+  if (!db.remote) {
+    await db.query(
+      `INSERT INTO coach (name, email, is_admin, access_token_hash)
+       VALUES ('Demo-Trainer', 'dev-trainer@example.org', true, $1)`,
+      [hashToken('dev-trainer')],
+    );
+    console.log(`Coach link: ${BASE_URL}/t/dev-trainer`);
   }
 } finally {
   await db.close();

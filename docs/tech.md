@@ -143,8 +143,8 @@ Während der Saison:
 - **Eltern:** persönlicher Link `team.bretten-kangaroos.net/f/<token>` mit langem Zufallstoken.
   Beim ersten Aufruf setzt der Server ein Cookie (httpOnly) und leitet auf `/` weiter – das Token
   steht danach nicht mehr in der Adresszeile. Token rotierbar, falls ein Link weitergegeben wurde.
-- **Trainer:** Magic-Link per Mail → Sitzung im Cookie. 4 Trainer (Martin + 3), je einem oder beiden Teams zugeordnet.
-- **Claude:** ein Admin-Token (nur Martin) im `Authorization`-Header, auf dem Server nur gehasht gespeichert.
+- **Trainer:** vorerst wie die Eltern ein persönlicher Link `/t/<token>` (Claude legt ihn per Admin-API an) → Cookie. Magic-Link per Mail folgt mit dem Mailversand. 4 Trainer (Martin + 3), je einem oder beiden Teams zugeordnet; Admins sehen alle Teams.
+- **Claude:** ein Admin-Token (nur Martin) im `Authorization`-Header, auf dem Server nur gehasht gespeichert (`ADMIN_TOKEN_HASH`). Endpunkte und Abläufe: Skill `.claude/skills/teamplaner-admin/SKILL.md`.
 
 ## Datenschutz (DSGVO)
 

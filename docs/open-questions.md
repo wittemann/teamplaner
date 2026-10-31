@@ -35,7 +35,7 @@ Was es stattdessen geben könnte:
 ## Noch offen
 
 - [ ] **Vercel-Support** fragen, ob der Hobby-Plan für ein ehrenamtliches Vereinswerkzeug ohne Werbung/Zahlungen in Ordnung ist (optional)
-- [ ] **Subdomain** `team.bretten-kangaroos.net` bei IONOS auf Vercel zeigen lassen
+- [ ] **Subdomain** `team.bretten-kangaroos.net` bei IONOS auf Vercel zeigen lassen – erst zum Start
 - [ ] **Neon** aktuelle Grenzen des kostenlosen Plans prüfen
 - [ ] **DPA** von Vercel und Neon im Verein ablegen
 - [ ] **Trainer:** Welcher der 3 weiteren Trainer betreut welches Team?

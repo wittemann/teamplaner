@@ -7,9 +7,11 @@ type Props = {
   title: string;
   /** Shown on the right of the header, e.g. "Familie Müller" */
   who?: string;
+  /** Coach pages: the season matrix needs more width than the phone-first parent page */
+  wide?: boolean;
 };
 
-const { title, who } = Astro.props;
+const { title, who, wide = false } = Astro.props;
 ---
 
 <html lang="de">
@@ -40,7 +42,7 @@ const { title, who } = Astro.props;
       </div>
       {who && <span class="text-[15px] text-[#C7D8B8]">{who}</span>}
     </header>
-    <main class="mx-auto max-w-xl">
+    <main class:list={['mx-auto', wide ? 'max-w-6xl' : 'max-w-xl']}>
       <slot />
     </main>
   </body>

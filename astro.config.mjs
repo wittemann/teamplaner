@@ -35,6 +35,8 @@ export default defineConfig({
     schema: {
       // Neon. Optional: without it the app uses the local PGlite database (src/lib/db/client.ts)
       DATABASE_URL: envField.string({ context: 'server', access: 'secret', optional: true }),
+      // SHA-256 (hex) of the Admin-API token Claude uses. Without it the Admin API answers 401.
+      ADMIN_TOKEN_HASH: envField.string({ context: 'server', access: 'secret', optional: true }),
     },
   },
 });

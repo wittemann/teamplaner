@@ -4,5 +4,7 @@ declare namespace App {
   interface Locals {
     /** The family of the personal link, if the cookie holds a valid one (src/middleware.ts) */
     guardian?: import('./lib/season.ts').Guardian;
+    /** The coach of the personal coach link, if the cookie holds a valid one */
+    coach?: import('./lib/coach.ts').Coach;
   }
 }

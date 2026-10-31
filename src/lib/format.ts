@@ -37,3 +37,8 @@ export function deadline(iso: string) {
   const t = time(iso).replace(/:00$/, '');
   return `${weekday(iso)} ${shortDate(iso)}, ${t} Uhr`;
 }
+
+/** "Samstag, 17. April 2027" */
+export function longDate(iso: string) {
+  return parts(iso, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
