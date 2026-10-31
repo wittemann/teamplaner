@@ -4,6 +4,10 @@
 //   node scripts/admin.ts GET /teams                 local (.env, http://localhost:4321)
 //   node scripts/admin.ts --neon GET /events?team=…  production (.env.neon)
 //   node scripts/admin.ts --neon POST /coaches '{"name":"…"}'
+
+// A module, so top-level await type-checks (the file has no imports)
+export {};
+
 const args = process.argv.slice(2);
 const neon = args[0] === '--neon';
 if (neon) args.shift();
