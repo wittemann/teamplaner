@@ -138,7 +138,11 @@ export default function SeasonView({
   return (
     <>
       <div class="border-b border-line bg-chalk px-4 pt-7 pb-5.5">
-        <p class="label mb-1.5">Saison {child.season}</p>
+        <p class="label mb-1.5">
+          Saison {child.season}
+          {/* With several children the buttons below name them */}
+          {children.length === 1 && ` · ${child.firstName} · ${child.teamName}`}
+        </p>
         <h1 class="heading text-4xl leading-tight">Unsere Termine</h1>
         {children.length > 1 && (
           <div class="mt-4 flex flex-wrap gap-2" role="group" aria-label="Kind auswählen">
