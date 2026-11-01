@@ -2,6 +2,32 @@
 import { isoDay, longMonth } from './format.ts';
 import type { SeasonChild, SeasonEvent, Status } from './season.ts';
 
+/** What a push is about; the page names it on the event the push leads to. */
+export const EVENT_NEWS = {
+  hinweis: 'Hinweis vom Trainer',
+  abgesagt: 'Fällt aus',
+  wieder: 'Findet doch statt',
+  geaendert: 'Zeit oder Ort geändert',
+} as const;
+
+export type EventNews = keyof typeof EVENT_NEWS;
+
+/** Where a push about an event leads: the season page, at that event. */
+export function eventLink(eventId: string, news: EventNews) {
+  return `/?termin=${eventId}&neu=${news}`;
+}
+
+/** The child and tab that show an event; undefined when it is over or not theirs. */
+export function findEvent(children: SeasonChild[], eventId: string) {
+  for (const child of children) {
+    if (child.games.some((e) => e.id === eventId))
+      return { playerId: child.playerId, tab: 'games' as const };
+    if (child.trainings.some((e) => e.id === eventId))
+      return { playerId: child.playerId, tab: 'trainings' as const };
+  }
+  return undefined;
+}
+
 /** Open = needs an answer and has none (cancelled games don't count). */
 export function isOpen(event: SeasonEvent) {
   return !event.cancelled && event.status === null;

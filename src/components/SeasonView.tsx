@@ -12,6 +12,8 @@ import type { SeasonChild, SeasonEvent, Status } from '../lib/season.ts';
 import {
   applyStatus,
   currentStatuses,
+  EVENT_NEWS,
+  findEvent,
   isOpen,
   openGames,
   trainingsByMonth,
@@ -32,6 +34,10 @@ type Props = {
   calendarUrl?: string;
   /** VAPID public key; without it there are no notifications to offer */
   pushKey?: string;
+  /** The event a tapped notification is about: it is shown, scrolled to and marked */
+  focusEventId?: string;
+  /** What is new about it (EVENT_NEWS); anything else shows no text */
+  focusNews?: string;
 };
 
 const TAGS: Record<string, string> = { home: 'Heim', away: 'Auswärts', tournament: 'Turnier' };
@@ -64,15 +70,29 @@ export default function SeasonView({
   today,
   calendarUrl,
   pushKey,
+  focusEventId,
+  focusNews,
 }: Props) {
   const [children, setChildren] = useState(initialChildren);
   const [absences, setAbsences] = useState(initialAbsences);
-  const [selectedId, setSelectedId] = useState(initialChildren[0]?.playerId);
-  const [tab, setTab] = useState<'games' | 'trainings' | null>(null);
+  const focused = focusEventId ? findEvent(initialChildren, focusEventId) : undefined;
+  const [selectedId, setSelectedId] = useState(focused?.playerId ?? initialChildren[0]?.playerId);
+  const [tab, setTab] = useState<'games' | 'trainings' | null>(focused?.tab ?? null);
   const [error, setError] = useState<string | null>(null);
   // Read after the first render, so server and browser render the same
   const [saidNo, setSaidNo] = useState<string[] | null>(null);
   useEffect(() => setSaidNo(readNo()), []);
+  useEffect(() => {
+    if (!focusEventId) return;
+    document.getElementById(`termin-${focusEventId}`)?.scrollIntoView({ block: 'center' });
+    // A reload shows the plain page again
+    history.replaceState(null, '', '/');
+  }, []);
+  const news =
+    focusNews && Object.hasOwn(EVENT_NEWS, focusNews)
+      ? EVENT_NEWS[focusNews as keyof typeof EVENT_NEWS]
+      : undefined;
+  const marked = (eventId: string) => (eventId === focusEventId ? { news } : undefined);
   const child = children.find((c) => c.playerId === selectedId) ?? children[0];
 
   if (!child) {
@@ -182,6 +202,12 @@ export default function SeasonView({
         )}
       </div>
 
+      {focusEventId && !focused && (
+        <p role="status" class="mx-4 mt-4 rounded-md bg-note-bg px-4 py-3 text-[15px] text-ink">
+          Dieser Termin ist schon vorbei.
+        </p>
+      )}
+
       {week && <ThisWeek week={week} onAnswer={(id, status) => save([id], status)} />}
 
       <div class="flex flex-col gap-3.5 px-4 pt-6 pb-2">
@@ -269,12 +295,21 @@ export default function SeasonView({
           {shownTab === 'games' ? (
             <div class="flex flex-col gap-3 pt-4">
               {child.games.map((g) => (
-                <GameCard key={g.id} game={g} onAnswer={(status) => save([g.id], status)} />
+                <GameCard
+                  key={g.id}
+                  game={g}
+                  mark={marked(g.id)}
+                  onAnswer={(status) => save([g.id], status)}
+                />
               ))}
               {child.games.length === 0 && <p>Noch keine Spiele eingetragen.</p>}
             </div>
           ) : (
-            <Trainings child={child} onAnswer={(id, status) => save([id], status)} />
+            <Trainings
+              child={child}
+              marked={marked}
+              onAnswer={(id, status) => save([id], status)}
+            />
           )}
         </div>
       </section>
@@ -298,7 +333,52 @@ export default function SeasonView({
   );
 }
 
-function GameCard({ game, onAnswer }: { game: SeasonEvent; onAnswer: (s: Status) => void }) {
+/** A notification led to this event; `news` says why, for those who didn't read it. */
+type Mark = { news?: string };
+
+function NewsLabel({ mark }: { mark: Mark }) {
+  if (!mark.news) return null;
+  return (
+    <p class="mb-2 text-sm font-semibold tracking-[0.06em] text-jersey uppercase">
+      Neu: {mark.news}
+    </p>
+  );
+}
+
+function CoachNote({ note }: { note: string }) {
+  return (
+    <div class="mt-3 flex gap-2 rounded bg-note-bg px-3 py-2.5 text-[15px] leading-snug text-[#3A3F38]">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#A3500F"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        class="mt-px shrink-0"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 8v5M12 16h.01" />
+      </svg>
+      <span>
+        <strong class="text-ink">Hinweis vom Trainer:</strong> {note}
+      </span>
+    </div>
+  );
+}
+
+function GameCard({
+  game,
+  mark,
+  onAnswer,
+}: {
+  game: SeasonEvent;
+  mark?: Mark;
+  onAnswer: (s: Status) => void;
+}) {
   const open = isOpen(game);
   const late = game.respondBy !== null && new Date(game.respondBy) < new Date();
   const tag = TAGS[game.type === 'tournament' ? 'tournament' : (game.homeAway ?? '')];
@@ -314,10 +394,12 @@ function GameCard({ game, onAnswer }: { game: SeasonEvent; onAnswer: (s: Status)
 
   return (
     <article
+      id={`termin-${game.id}`}
       class={`rounded-md bg-white p-4 ${open ? 'border-2 border-rust' : 'border border-line'} ${
-        game.cancelled ? 'opacity-60' : ''
-      }`}
+        game.cancelled && !mark ? 'opacity-60' : ''
+      } ${mark ? 'ring-3 ring-jersey' : ''}`}
     >
+      {mark && <NewsLabel mark={mark} />}
       <div class="flex gap-3.5">
         <div class="flex w-14 shrink-0 flex-col rounded bg-chalk py-1.5 text-center leading-tight">
           <span class="text-[13px] font-semibold text-text-light uppercase">
@@ -382,28 +464,7 @@ function GameCard({ game, onAnswer }: { game: SeasonEvent; onAnswer: (s: Status)
         </div>
       </div>
 
-      {game.coachNote && !game.cancelled && (
-        <div class="mt-3 flex gap-2 rounded bg-note-bg px-3 py-2.5 text-[15px] leading-snug text-[#3A3F38]">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#A3500F"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-            class="mt-px shrink-0"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 8v5M12 16h.01" />
-          </svg>
-          <span>
-            <strong class="text-ink">Hinweis vom Trainer:</strong> {game.coachNote}
-          </span>
-        </div>
-      )}
+      {game.coachNote && !game.cancelled && <CoachNote note={game.coachNote} />}
 
       {!game.cancelled && (
         <>
@@ -568,9 +629,11 @@ function AnswerButton(props: { positive: boolean; onClick: () => void; label: st
 
 function Trainings({
   child,
+  marked,
   onAnswer,
 }: {
   child: SeasonChild;
+  marked: (eventId: string) => Mark | undefined;
   onAnswer: (eventId: string, status: Status) => void;
 }) {
   if (child.trainings.length === 0) return <p class="pt-4">Noch keine Trainings eingetragen.</p>;
@@ -584,37 +647,50 @@ function Trainings({
         <div key={m.label}>
           <h3 class="heading mt-5 mb-1 text-xl">{m.label}</h3>
           <ul>
-            {m.trainings.map((t) => (
-              <li key={t.id} class="flex min-h-16 items-center gap-3 border-b border-line py-2">
-                <div class="flex w-24 shrink-0 flex-col leading-tight">
-                  <strong class="text-ink">
-                    {weekday(t.startsAt)} {shortDate(t.startsAt)}
-                  </strong>
-                  <span class="text-sm text-text-light">
-                    {time(t.startsAt)}
-                    {t.endsAt && `–${time(t.endsAt)}`}
-                  </span>
-                </div>
-                <div class="min-w-0 flex-1 text-[15px]">
-                  {t.cancelled ? (
-                    <span class="text-text-light">
-                      Fällt aus{t.cancelReason && ` · ${t.cancelReason}`}
-                    </span>
-                  ) : t.status === 'out' ? (
-                    <span class="font-semibold text-rust">Abgemeldet</span>
-                  ) : (
-                    <span class="font-semibold text-jersey">Dabei ✓</span>
-                  )}
-                </div>
-                {!t.cancelled && (
-                  <AnswerButton
-                    positive={t.status === 'out'}
-                    onClick={() => onAnswer(t.id, t.status === 'out' ? 'in' : 'out')}
-                    label={t.status === 'out' ? 'Doch dabei' : 'Abmelden'}
-                  />
-                )}
-              </li>
-            ))}
+            {m.trainings.map((t) => {
+              const mark = marked(t.id);
+              return (
+                <li
+                  key={t.id}
+                  id={`termin-${t.id}`}
+                  class={`border-b border-line py-2 ${
+                    mark ? 'my-2 rounded-md border-b-0 px-3 ring-3 ring-jersey' : ''
+                  }`}
+                >
+                  {mark && <NewsLabel mark={mark} />}
+                  <div class="flex min-h-12 items-center gap-3">
+                    <div class="flex w-24 shrink-0 flex-col leading-tight">
+                      <strong class="text-ink">
+                        {weekday(t.startsAt)} {shortDate(t.startsAt)}
+                      </strong>
+                      <span class="text-sm text-text-light">
+                        {time(t.startsAt)}
+                        {t.endsAt && `–${time(t.endsAt)}`}
+                      </span>
+                    </div>
+                    <div class="min-w-0 flex-1 text-[15px]">
+                      {t.cancelled ? (
+                        <span class="text-text-light">
+                          Fällt aus{t.cancelReason && ` · ${t.cancelReason}`}
+                        </span>
+                      ) : t.status === 'out' ? (
+                        <span class="font-semibold text-rust">Abgemeldet</span>
+                      ) : (
+                        <span class="font-semibold text-jersey">Dabei ✓</span>
+                      )}
+                    </div>
+                    {!t.cancelled && (
+                      <AnswerButton
+                        positive={t.status === 'out'}
+                        onClick={() => onAnswer(t.id, t.status === 'out' ? 'in' : 'out')}
+                        label={t.status === 'out' ? 'Doch dabei' : 'Abmelden'}
+                      />
+                    )}
+                  </div>
+                  {t.coachNote && !t.cancelled && <CoachNote note={t.coachNote} />}
+                </li>
+              );
+            })}
           </ul>
         </div>
       ))}

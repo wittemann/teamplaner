@@ -177,7 +177,12 @@ export async function notifyMoved(
   const { reachedIds, reached, missed } = await pushEventNews(
     db,
     event.id,
-    { title: `Geändert: ${event.title}`, body: when(event), tag: `event-${event.id}` },
+    {
+      title: `Geändert: ${event.title}`,
+      body: when(event),
+      tag: `event-${event.id}`,
+      news: 'geaendert',
+    },
     deps.push,
   );
   let sent = 0;

@@ -2,6 +2,7 @@
 // server sends with the `web-push` library and VAPID keys from the environment. Without the keys
 // nothing is sent and callers fall back to mail where there is one.
 import type { Db } from './db/client.ts';
+import { eventLink, type EventNews } from './season-state.ts';
 
 export type Owner = { guardianId: string } | { coachId: string };
 
@@ -149,18 +150,20 @@ async function guardiansTakingPart(db: Db, eventId: string, includeCancelled: bo
 }
 
 /**
- * News about one event as a push to the families taking part. Returns who got it, and how many
- * families have no device for it.
+ * News about one event as a push to the families taking part; a tap opens the event on the season
+ * page. Returns who got it, and how many families have no device for it.
  */
 export async function pushEventNews(
   db: Db,
   eventId: string,
-  message: Omit<PushMessage, 'url'>,
+  message: Omit<PushMessage, 'url'> & { news: EventNews },
   send: PushSender | undefined,
   { includeCancelled = false } = {},
 ) {
   const guardians = (await guardiansTakingPart(db, eventId, includeCancelled)).map((g) => g.id);
-  const reached = await pushTo(db, { guardianIds: guardians }, { url: '/', ...message }, send);
+  const { news, ...content } = message;
+  const url = eventLink(eventId, news);
+  const reached = await pushTo(db, { guardianIds: guardians }, { ...content, url }, send);
   return { reachedIds: reached, reached: reached.size, missed: guardians.length - reached.size };
 }
 
@@ -175,7 +178,12 @@ export function pushCoachNote(
   return pushEventNews(
     db,
     event.id,
-    { title: `Hinweis: ${event.title} (${when})`, body: note, tag: `note-${event.id}` },
+    {
+      title: `Hinweis: ${event.title} (${when})`,
+      body: note,
+      tag: `note-${event.id}`,
+      news: 'hinweis',
+    },
     send,
   );
 }
@@ -194,7 +202,8 @@ export function pushCancelled(
         title: `Findet doch statt: ${event.title} (${when})`,
         body: 'Die Absage ist zurückgenommen.',
       };
-  return pushEventNews(db, event.id, { ...message, tag: `event-${event.id}` }, send, {
+  const news = event.cancelled ? 'abgesagt' : 'wieder';
+  return pushEventNews(db, event.id, { ...message, tag: `event-${event.id}`, news }, send, {
     includeCancelled: true,
   });
 }

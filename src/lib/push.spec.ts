@@ -120,6 +120,7 @@ describe('push', () => {
         expect(JSON.parse(payload)).toMatchObject({
           title: 'Fällt aus: vs. Karlsruhe (Di 13.05.)',
           body: 'Platz gesperrt',
+          url: `/?termin=${training.id}&neu=abgesagt`,
         });
       },
     );

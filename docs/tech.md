@@ -93,6 +93,9 @@ Umsetzung (2026-10-31):
 - Absage / zurückgenommene Absage im Trainerbereich: Push an die Familien, die dabei sind. Verlegung:
   ebenso; bei Spielen bekommt jeder Elternteil mit Zusage, den kein Push erreicht hat, die Mail
   „passt es noch?“. Über die Admin-API nur mit `notify: true`, sonst erfährt es niemand (z. B. beim Wechsel der Trainingszeiten).
+- Push zu einem Termin führt beim Antippen direkt dorthin (`/?termin=<id>&neu=<was>`): richtiges Kind und
+  richtiger Reiter, Termin im Blick und umrandet, darüber „Neu: …“ – auch für alle, die den Text der
+  Benachrichtigung auf dem Handy nicht sehen.
 - Erinnerungen „noch offen“ gehen weiterhin nur per Mail (mit Antwort-Knöpfen).
 - `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (Vercel); ohne sie bietet die Seite keine
   Benachrichtigungen an und alles geht per Mail. Schlüssel nie wechseln – sonst müssen sich alle

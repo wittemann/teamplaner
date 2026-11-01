@@ -3,6 +3,8 @@ import type { SeasonChild, SeasonEvent } from './season.ts';
 import {
   applyStatus,
   currentStatuses,
+  eventLink,
+  findEvent,
   openGames,
   trainingsByMonth,
   upcomingWeek,
@@ -39,6 +41,17 @@ const ella: SeasonChild = {
 };
 
 describe('season state', () => {
+  it('finds the child and tab that show an event', () => {
+    const noah = { ...ella, playerId: 'noah', games: [], trainings: [game('t1', null)] };
+    expect(findEvent([ella, noah], 'g2')).toEqual({ playerId: 'ella', tab: 'games' });
+    expect(findEvent([ella, noah], 't1')).toEqual({ playerId: 'noah', tab: 'trainings' });
+    expect(findEvent([ella, noah], 'vorbei')).toBeUndefined();
+  });
+
+  it('links a push to its event', () => {
+    expect(eventLink('g1', 'abgesagt')).toBe('/?termin=g1&neu=abgesagt');
+  });
+
   it('lists open games, without cancelled ones', () => {
     const child = { ...ella, games: [...ella.games, { ...game('g4', null), cancelled: true }] };
     expect(openGames(child).map((g) => g.id)).toEqual(['g2']);
