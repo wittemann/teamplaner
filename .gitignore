@@ -26,3 +26,6 @@ coverage/
 
 # editors
 .idea/
+
+# database backups (personal data, see docs/tech.md)
+backups/

@@ -36,9 +36,9 @@ Was es stattdessen geben könnte:
 
 - [ ] **Vercel-Support** fragen, ob der Hobby-Plan für ein ehrenamtliches Vereinswerkzeug ohne Werbung/Zahlungen in Ordnung ist (optional)
 - [x] **Subdomain** `team.bretten-kangaroos.net` zeigt auf Vercel (A-Record `216.198.79.1`, kein CNAME wegen der Mail-Einträge auf `team`)
-- [ ] **Neon** aktuelle Grenzen des kostenlosen Plans prüfen
+- [x] **Neon** Grenzen des kostenlosen Plans geprüft (2026-11-01): 1 GB Speicher, 100 CU-Stunden und 5 GB Datentransfer pro Monat, Pause nach 5 Minuten ohne Zugriff. Reicht für ~20 Kinder weit. Über der Grenze pausiert die Datenbank bis zum Monatsende, Daten bleiben. Keine automatischen Backups, Wiederherstellung nur 6 Stunden zurück – deshalb eigenes wöchentliches Backup ([tech.md](tech.md), „Backup“).
 - [ ] **DPA** von Vercel und Neon im Verein ablegen
 - [ ] **Trainer:** Welcher der 3 weiteren Trainer betreut welches Team?
 - [ ] **Vorstand:** Zustimmung zum Datenschutz nötig?
-- [ ] **Migration:** Kinder-/Elternliste aus SpielerPlus exportierbar?
-- [ ] **Testphase:** Parallel zu SpielerPlus, z. B. ein Team zuerst?
+- [x] **Migration:** kein Export – Martin legt die ~20 Kinder und Familien von Hand an (2026-11-01)
+- [x] **Testphase:** keine – Umstieg für beide Teams auf einmal, sobald die Trainer zugestimmt haben (2026-11-01)

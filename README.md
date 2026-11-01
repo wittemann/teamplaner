@@ -57,6 +57,7 @@ tippen **„Bei allen dabei“** und nehmen nur die Ausnahmen raus – fertig in
 - [x] Web Push: Hinweis am Termin an Familien mit Zusage, späte Änderungen an Trainer (Push, sonst Mail), „Zum Home-Bildschirm“, Trainer sieht, wer keine Benachrichtigungen hat
 - [x] Eltern: Abwesenheit (mit Ferien-Schnellauswahl), Ferienfrage, Kalender-Abo
 - [x] Eltern + Trainer: „Link verloren?“ (`/link`)
+- [x] Backup: `npm run db:backup:neon` / `db:restore:neon`, wöchentlich als geplante Claude-Aufgabe auf Martins Mac
 
 ## Entwicklung
 

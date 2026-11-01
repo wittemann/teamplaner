@@ -133,6 +133,22 @@ Umsetzung (2026-10-31):
 - Antwort-Knöpfe: `/antwort/<token>`, signiert (HMAC mit `LINK_KEY` über Eltern, Kind, Spiel, Antwort und
   den aktuellen persönlichen Link) statt gespeichert – ein erneuerter Link macht alte Knöpfe ungültig.
 
+## Backup
+
+Neons kostenloser Plan hat keine automatischen Backups und stellt nur 6 Stunden zurück wieder her.
+
+- `npm run db:backup:neon` schreibt alle Daten als JSON nach `backups/neon-<Zeitpunkt>.json` (nicht im Repo)
+  und behält die neuesten 8. Auch von Hand, z. B. vor einer größeren Änderung.
+- Wöchentlich läuft das als geplante Aufgabe in der Claude-App auf Martins Mac („Teamplaner-Backup“, sonntags
+  abends). Ist der Mac aus oder die App zu, läuft sie beim nächsten Start. Bewusst nicht als Vercel Cron mit
+  Mail: so liegen die Daten nur auf dem Mac (und in dessen Backup), nicht in einem Postfach.
+- Wiederherstellen nur in eine **leere** Datenbank (in Neon einen neuen Branch oder eine neue Datenbank
+  anlegen, `DATABASE_URL` in `.env.neon` darauf zeigen lassen): `npm run db:restore:neon -- <datei.json>`.
+  Das Skript wendet die Migrationen an und bricht ab, wenn die Datei zu einem anderen Schema-Stand gehört
+  (dann den passenden Git-Stand auschecken). Alles in einer Transaktion. Danach `DATABASE_URL` bei Vercel
+  auf die neue Datenbank umstellen.
+- Die Datei enthält personenbezogene Daten (Namen, Mail-Adressen, Zusagen) – nur bei Martin, nicht weitergeben.
+
 ## Spielplan aus dem BSM
 
 BSM (Baseball Softball Manager) = System des Verbands, in dem alle Ligaspiele stehen. Die Homepage
