@@ -4,7 +4,13 @@ import { readAnswerToken } from './answer-link.ts';
 import { eventDetail, type CoachEvent } from './coach.ts';
 import type { Db } from './db/client.ts';
 import { createTestDb, insert } from './db/test-db.ts';
-import { confirmedFamilies, isMoved, movedMail, notifyMoved } from './event-change.ts';
+import {
+  confirmedFamilies,
+  isMoved,
+  movedMail,
+  notifyEventChange,
+  notifyMoved,
+} from './event-change.ts';
 import { saveSubscription } from './push.ts';
 import type { Mail } from './mail.ts';
 import { hashToken, sealToken } from './token.ts';
@@ -117,8 +123,72 @@ describe('notifyMoved', () => {
         mails.push(mail);
       },
     });
-    expect(result).toEqual({ pushed: 0, sent: 2, failed: 0 });
+    expect(result).toEqual({ pushed: 0, missed: 2, sent: 2, failed: 0 });
     expect(mails.map((m) => m.to)).toEqual(['anna@example.org', 'bernd@example.org']);
+  });
+
+  describe('notifyEventChange', () => {
+    const notify = async (change: Partial<CoachEvent>) => {
+      const before = (await eventDetail(db, eventId))!.event;
+      const mails: Mail[] = [];
+      const pushes: { title: string; body: string }[] = [];
+      await saveSubscription(
+        db,
+        { guardianId: anna },
+        { endpoint: 'https://push.example/anna', keys: { p256dh: 'p', auth: 'a' } },
+        null,
+      );
+      const result = await notifyEventChange(
+        db,
+        before,
+        { ...before, ...change },
+        {
+          origin: ORIGIN,
+          key: KEY,
+          send: async (mail) => {
+            mails.push(mail);
+          },
+          push: async (_, payload) => {
+            pushes.push(JSON.parse(payload));
+          },
+        },
+      );
+      return { result, mails, pushes };
+    };
+
+    it('says nothing when only other fields change', async () => {
+      const { result, mails, pushes } = await notify({ minPlayers: 10 });
+      expect(result).toEqual({ pushed: 0, missed: 0, mailed: 0, failed: 0 });
+      expect(mails).toEqual([]);
+      expect(pushes).toEqual([]);
+    });
+
+    it('pushes a cancellation with its reason, no mail', async () => {
+      const { result, mails, pushes } = await notify({ cancelled: true, cancelReason: 'Regen' });
+      expect(pushes).toEqual([expect.objectContaining({ body: 'Regen' })]);
+      expect(pushes[0].title).toContain('Fällt aus: vs. Karlsruhe');
+      expect(mails).toEqual([]);
+      expect(result).toEqual({ pushed: 1, missed: 1, mailed: 0, failed: 0 });
+    });
+
+    it('pushes a move, and mails the parent no push reached', async () => {
+      const { result, mails, pushes } = await notify({ startsAt: '2099-05-22T09:00:00.000Z' });
+      expect(pushes[0].title).toBe('Geändert: vs. Karlsruhe');
+      expect(mails.map((m) => m.to)).toEqual(['bernd@example.org']);
+      expect(mails[0].html).toContain('Schüler');
+      expect(result).toEqual({ pushed: 1, missed: 1, mailed: 1, failed: 0 });
+    });
+
+    it('pushes a new note, not an unchanged one', async () => {
+      const { pushes } = await notify({ coachNote: 'Weiße Trikots' });
+      expect(pushes).toEqual([expect.objectContaining({ body: 'Weiße Trikots' })]);
+    });
+
+    it('pushes no note on a cancelled event', async () => {
+      const { pushes } = await notify({ cancelled: true, coachNote: 'Weiße Trikots' });
+      expect(pushes).toHaveLength(1);
+      expect(pushes[0].title).toContain('Fällt aus');
+    });
   });
 
   it('writes the new plan and buttons that work', async () => {
@@ -149,7 +219,7 @@ describe('notifyMoved', () => {
         throw Object.assign(new Error('nope'), { code: 'EAUTH' });
       },
     });
-    expect(result).toEqual({ pushed: 0, sent: 0, failed: 2 });
+    expect(result).toEqual({ pushed: 0, missed: 2, sent: 0, failed: 2 });
   });
 
   it('pushes first and mails only the parents the push did not reach', async () => {
@@ -172,7 +242,7 @@ describe('notifyMoved', () => {
         payloads.push(payload);
       },
     });
-    expect(result).toEqual({ pushed: 1, sent: 1, failed: 0 });
+    expect(result).toEqual({ pushed: 1, missed: 1, sent: 1, failed: 0 });
     expect(mails.map((m) => m.to)).toEqual(['bernd@example.org']);
     expect(JSON.parse(payloads[0]).title).toBe('Geändert: vs. Karlsruhe');
   });

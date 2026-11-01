@@ -5,7 +5,6 @@
 import { LINK_KEY } from 'astro:env/server';
 import EventForm from '../../../../components/EventForm.astro';
 import Base from '../../../../layouts/Base.astro';
-import { applyAbsencesToEvents } from '../../../../lib/absence.ts';
 import { updateEvent } from '../../../../lib/admin/data.ts';
 import { canSeeTeam, coachTeams, eventDetail } from '../../../../lib/coach.ts';
 import { getDb } from '../../../../lib/db/index.ts';
@@ -39,8 +38,6 @@ if (Astro.request.method === 'POST') {
   if (result.ok) {
     await updateEvent(db, id, result.fields);
     const after = (await eventDetail(db, id))!.event;
-    // A new day can fall into an entered absence
-    if (after.startsAt !== before.startsAt) await applyAbsencesToEvents(db, [id]);
     let mailed = '';
     if (isRescheduled(before, after)) {
       const { pushed, sent, failed } = await notifyMoved(db, after, team?.name ?? '', {

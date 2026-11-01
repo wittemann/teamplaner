@@ -25,6 +25,9 @@ function event(id: string, type: CoachEvent['type'], extra: Partial<CoachEvent> 
     coachNote: null,
     cancelled: false,
     cancelReason: null,
+    opponent: null,
+    seriesId: null,
+    bsmMatchId: null,
     ...extra,
   } satisfies CoachEvent;
 }

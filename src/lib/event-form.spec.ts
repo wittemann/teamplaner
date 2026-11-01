@@ -25,6 +25,9 @@ const game: CoachEvent = {
   coachNote: null,
   cancelled: false,
   cancelReason: null,
+  opponent: null,
+  seriesId: null,
+  bsmMatchId: null,
 };
 
 describe('berlinIso / timeInput', () => {

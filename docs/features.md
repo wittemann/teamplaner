@@ -54,7 +54,7 @@ Für Spiele dagegen **ausdrückliche** Zusage zu Saisonbeginn (keine Antwort = o
 ### Trainer
 
 - [x] Termine anlegen und bearbeiten (Spiele kommen einmal pro Saison per Claude aus dem BSM; Turniere, Freundschaftsspiele von Hand) – verlegtes Spiel → Mail an Familien mit Zusage
-- [ ] Trainings als Serie (z. B. Di + Do 17:30), einzelne absagen – Absagen geht, Serien legt vorerst Claude an
+- [x] Trainings als Serie (z. B. Di + Do 17:30), einzelne absagen – Absagen im Trainerbereich; Serien und der Wechsel Sommer/Winter (zweimal pro Saison) bewusst nur über Claude
 - [x] Termin: Typ, Datum, Treffpunkt + Uhrzeit, Beginn, Ort (Maps-Link), Gegner (im Titel), Heim/Auswärts
 - [x] Übersicht pro Termin: dabei / nicht dabei / offen, mit Ampel (Mindestzahl)
 - [x] Saison-Matrix: Kinder × Termine
@@ -79,7 +79,7 @@ Für Spiele dagegen **ausdrückliche** Zusage zu Saisonbeginn (keine Antwort = o
 
 ### Claude
 
-- [ ] Alles, was der Trainer kann, auch über Claude Code – nur für Martin (siehe [tech.md](tech.md))
+- [ ] Alles, was der Trainer kann, auch über Claude Code – nur für Martin (siehe [tech.md](tech.md)). Fehlt noch: Erinnerungsplan, „Ohne Benachrichtigung“, Telefonnummer für den persönlichen Anstoß
 
 ## Später / Nice-to-have
 

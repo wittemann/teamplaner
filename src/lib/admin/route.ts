@@ -10,6 +10,7 @@ import { getDb } from '../db/index.ts';
 import { hashToken } from '../token.ts';
 
 export class NotFound extends Error {}
+export class Conflict extends Error {}
 
 function isAdmin(request: Request) {
   const token = request.headers.get('authorization')?.match(/^Bearer (.+)$/)?.[1];
@@ -26,7 +27,7 @@ function json(body: unknown, status = 200) {
   });
 }
 
-/** Wraps an endpoint: 401 without the admin token, 400/404 for bad input, JSON for the rest. */
+/** Wraps an endpoint: 401 without the admin token, 400/404/409 for bad input, JSON for the rest. */
 // eslint-disable-next-line no-restricted-syntax -- Astro needs APIRoute for the exported GET/POST
 export function adminRoute(handler: (context: APIContext, db: Db) => Promise<unknown>): APIRoute {
   return async (context) => {
@@ -37,6 +38,7 @@ export function adminRoute(handler: (context: APIContext, db: Db) => Promise<unk
       if (error instanceof z.ZodError) return json({ error: 'invalid', issues: error.issues }, 400);
       if (error instanceof NotFound)
         return json({ error: 'not found', detail: error.message }, 404);
+      if (error instanceof Conflict) return json({ error: 'conflict', detail: error.message }, 409);
       throw error;
     }
   };

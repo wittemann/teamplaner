@@ -26,19 +26,20 @@ Tokens und Links **nie** in Commits, Docs oder Logs schreiben. Persönliche Link
 
 ## Endpunkte
 
-| Methode + Pfad                       | Body / Query                                                                                            | Ergebnis                                                                              |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `GET /teams`                         | –                                                                                                       | Teams mit Kindern (`name` = Vorname + Initial), Eltern, Trainern, IDs                 |
-| `POST /teams`                        | `{ name, season }`                                                                                      | `{ id }`                                                                              |
-| `GET /events?team=<id>[&from=<ISO>]` | –                                                                                                       | kommende Termine mit `counts {in,out,open}`, Namen `out`/`open`, `lateChanges`        |
-| `POST /events`                       | `{ teamId, events: [Event…] }` (max. 200)                                                               | `{ created: [ids] }`                                                                  |
-| `PATCH /events/<id>`                 | Teil eines Events                                                                                       | `{ updated }`                                                                         |
-| `PUT /responses`                     | `{ eventId, playerId, status: "in" \| "out" \| null }`                                                  | Antwort setzen (null = wieder offen)                                                  |
-| `POST /families`                     | `{ name, email, phone?, players: [{ firstName, lastNameInitial, birthYear, teamId } \| { playerId }] }` | `{ guardianId, playerIds, link }`                                                     |
-| `POST /guardians/<id>/token`         | –                                                                                                       | neuer Eltern-Link, alter ungültig                                                     |
-| `POST /coaches`                      | `{ name, email, isAdmin?, teamIds }`                                                                    | `{ coachId, link }` (Link zum Trainerbereich)                                         |
-| `POST /coaches/<id>/token`           | –                                                                                                       | neuer Trainer-Link                                                                    |
-| `POST /reminders`                    | `{ teamId?, mode?: "all" \| "due", dryRun? }`                                                           | Erinnerungs-Mails an Familien mit offenen Spielen; `dryRun` zeigt nur, wer sie bekäme |
+| Methode + Pfad                       | Body / Query                                                                                            | Ergebnis                                                                                                             |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `GET /teams`                         | –                                                                                                       | Teams mit Kindern (`name` = Vorname + Initial), Eltern, Trainern, IDs                                                |
+| `POST /teams`                        | `{ name, season }`                                                                                      | `{ id }`                                                                                                             |
+| `GET /events?team=<id>[&from=<ISO>]` | –                                                                                                       | kommende Termine mit `seriesId`, `bsmMatchId`, `opponent`, `counts {in,out,open}`, Namen `out`/`open`, `lateChanges` |
+| `POST /events`                       | `{ teamId, events: [Event…] }` (max. 200)                                                               | `{ created: [ids] }`                                                                                                 |
+| `PATCH /events/<id>`                 | Teil eines Events, optional `notify: true`                                                              | `{ updated }`, mit `notify` auch `notified {pushed,missed,mailed,failed}`                                            |
+| `DELETE /events/<id>[?force=true]`   | –                                                                                                       | `{ deleted, answers }`; 409, wenn es Antworten gibt und `force` fehlt                                                |
+| `PUT /responses`                     | `{ eventId, playerId, status: "in" \| "out" \| null }`                                                  | Antwort setzen (null = wieder offen)                                                                                 |
+| `POST /families`                     | `{ name, email, phone?, players: [{ firstName, lastNameInitial, birthYear, teamId } \| { playerId }] }` | `{ guardianId, playerIds, link }`                                                                                    |
+| `POST /guardians/<id>/token`         | –                                                                                                       | neuer Eltern-Link, alter ungültig                                                                                    |
+| `POST /coaches`                      | `{ name, email, isAdmin?, teamIds }`                                                                    | `{ coachId, link }` (Link zum Trainerbereich)                                                                        |
+| `POST /coaches/<id>/token`           | –                                                                                                       | neuer Trainer-Link                                                                                                   |
+| `POST /reminders`                    | `{ teamId?, mode?: "all" \| "due", dryRun? }`                                                           | Erinnerungs-Mails an Familien mit offenen Spielen; `dryRun` zeigt nur, wer sie bekäme                                |
 
 **Event-Felder:** `type` (`game` \| `training` \| `tournament` \| `other`), `title` („vs. Heidelberg“ /
 „bei Mannheim“ / „Training“), `opponent`, `homeAway` (`home` \| `away`), `seriesId` (UUID, gleiche für
@@ -46,11 +47,15 @@ eine Trainingsserie), `bsmMatchId`, `meetAt`, `startsAt`, `endsAt`, `respondBy` 
 `locationName`, `locationUrl`, `minPlayers`, `coachNote`, `cancelled`, `cancelReason`.
 Zeiten als ISO mit Offset, deutsche Zeit: Sommer `+02:00`, Winter `+01:00`.
 
-Fehler: 401 = Token falsch, 400 = `issues` (zod) zeigen das falsche Feld, 404 = ID unbekannt.
+Fehler: 401 = Token falsch, 400 = `issues` (zod) zeigen das falsche Feld, 404 = ID unbekannt, 409 = Termin hat Antworten.
 
-Trainer können im Trainerbereich selbst Termine anlegen, bearbeiten und absagen (verlegtes Spiel → Mail an
-Familien mit Zusage). Über `PATCH /events/<id>` geht keine Mail raus – bei Verlegungen per API die Familien
-selbst informieren oder Martin auf den Trainerbereich verweisen.
+Trainer können im Trainerbereich selbst Termine anlegen, bearbeiten und absagen. `PATCH /events/<id>` informiert
+nur mit `notify: true` jemanden, dann genau wie der Trainerbereich: Absage, zurückgenommene Absage, Verlegung,
+neuer Hinweis gehen als Push an die Familien, die dabei sind; bei verlegten Spielen bekommt, wen kein Push
+erreicht, die Mail. Fällt ein neuer Tag in eine eingetragene Abwesenheit, setzt die App das Kind auf „Nicht dabei“.
+
+`DELETE` nur für Demodaten und Versehen: Es informiert niemanden und löscht die Antworten mit. Ein echter Termin,
+der ausfällt, wird abgesagt. `force` nur nach Martins OK.
 
 Erinnerungen: Der Cron schickt sie automatisch 7 Tage und 1 Tag vor dem Stichtag; bei spät angelegten Spielen
 kommt die erste beim nächsten Lauf. Zum Saisonstart (ca. 3 Tage
@@ -72,13 +77,23 @@ derselbe Link per Mail. Erneuern nur, wenn ein Link weitergegeben wurde (der alt
 4. Trainings als Serie: ein `seriesId` (z. B. `uuidgen`), je Termin ein Event `type: "training"`;
    Feiertage/Ferien mit `cancelled: true, cancelReason`. Schulferien BW vorher mit Martin klären.
 
+**Trainingszeiten wechseln** (Sommer/Winter, zweimal pro Saison; es gibt bewusst kein Formular dafür):
+
+1. `GET /events?team=…`, kommende Trainings der Serie über `seriesId` finden.
+2. Alte und neue Zeiten Martin als Liste zeigen und OK abwarten. Zeitumstellung beachten (`+02:00` / `+01:00`).
+3. Je Termin `PATCH /events/<id>` mit `startsAt`, `endsAt`, `meetAt`, ggf. `locationName`; **nicht** absagen und
+   neu anlegen (Eltern sähen lauter „Fällt aus“, Abmeldungen gingen verloren). Ohne `notify`, sonst gibt es einen
+   Push pro Termin.
+4. Abmeldungen bleiben am verschobenen Termin stehen. Martin einen WhatsApp-Text für die Gruppe vorschlagen.
+
 **Wöchentlicher Check** („Wer hat für Samstag noch nicht zugesagt?“): `GET /events?team=…`, für die
 nächsten Spiele `counts` + `open` zusammenfassen, Mindestzahl prüfen, späte Änderungen nennen.
 Auf Wunsch WhatsApp-Text schreiben (kurz, Datum, Treffpunkt, offene Vornamen).
 
-**Verlegung/Absage:** `PATCH /events/<id>` mit neuer Zeit bzw. `cancelled`. Familien werden noch
-**nicht** automatisch benachrichtigt (das tut nur der Trainerbereich) – Martin auf WhatsApp-Text
-hinweisen. Ebenso `coachNote` über die API: steht auf der Seite, geht aber nicht als Push raus.
+**Verlegung/Absage/Hinweis:** `PATCH /events/<id>` mit neuer Zeit, `cancelled` oder `coachNote` und
+`notify: true`. Bei einer Verlegung `meetAt`, `endsAt` und `respondBy` mitziehen, sonst bleiben sie am alten Tag.
+Vorher mit Martin klären, denn es geht sofort an die Familien. `notified.missed` Familien haben
+kein Gerät für den Push – Martin auf den WhatsApp-Text hinweisen.
 
 **Neue Familie:** Kind + Elternteil per `POST /families`; zweiter Elternteil mit `{ playerId }`.
 Den zurückgegebenen Link Martin geben, nicht speichern.

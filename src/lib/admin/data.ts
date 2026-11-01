@@ -6,7 +6,7 @@ import { groupByStatus } from '../answers.ts';
 import { playerName, teamOverview, type CoachEvent } from '../coach.ts';
 import type { Db } from '../db/client.ts';
 import { hashToken, newAccessToken, sealToken } from '../token.ts';
-import { NotFound } from './route.ts';
+import { Conflict, NotFound } from './route.ts';
 
 const timestamp = z.iso.datetime({ offset: true });
 
@@ -188,12 +188,41 @@ export async function updateEvent(db: Db, id: string, input: z.infer<typeof upda
   if (columns.length === 0) return { updated: id };
   const sets = columns.map((column, i) => `${column} = $${i + 2}`);
   if (hasNote) sets.push('coach_note_updated_at = now()');
+  const [before] = input.startsAt
+    ? await db.query<{ starts_at: Date }>('SELECT starts_at FROM event WHERE id = $1', [id])
+    : [];
   const rows = await db.query(`UPDATE event SET ${sets.join(', ')} WHERE id = $1 RETURNING id`, [
     id,
     ...values,
   ]);
   if (rows.length === 0) throw new NotFound(`event ${id}`);
+  // A new day can fall into an entered absence
+  if (before && before.starts_at.getTime() !== new Date(input.startsAt!).getTime()) {
+    await applyAbsencesToEvents(db, [id]);
+  }
   return { updated: id };
+}
+
+/**
+ * Deletes an event with its answers and tells nobody – for demo data and mistakes; a real date that
+ * falls through gets cancelled. Answers from parents or Claude need `force`; the "out" an entered
+ * absence filled in doesn't count.
+ */
+export async function deleteEvent(db: Db, id: string, force: boolean) {
+  const [event] = await db.query<{ answers: number }>(
+    `SELECT count(r.event_id)::int AS answers
+       FROM event e
+       LEFT JOIN response r ON r.event_id = e.id AND r.responded_by NOT LIKE 'absence:%'
+      WHERE e.id = $1
+      GROUP BY e.id`,
+    [id],
+  );
+  if (!event) throw new NotFound(`event ${id}`);
+  if (event.answers > 0 && !force) {
+    throw new Conflict(`event ${id} has ${event.answers} answers, delete with ?force=true`);
+  }
+  await db.query('DELETE FROM event WHERE id = $1', [id]);
+  return { deleted: id, answers: event.answers };
 }
 
 export async function setResponse(db: Db, input: z.infer<typeof responseInput>) {

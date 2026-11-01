@@ -14,6 +14,9 @@ export type CoachEvent = {
   teamId: string;
   type: 'game' | 'training' | 'tournament' | 'other';
   title: string;
+  opponent: string | null;
+  seriesId: string | null;
+  bsmMatchId: number | null;
   homeAway: 'home' | 'away' | null;
   meetAt: string | null;
   startsAt: string;
@@ -66,6 +69,9 @@ type EventRow = {
   team_id: string;
   type: CoachEvent['type'];
   title: string;
+  opponent: string | null;
+  series_id: string | null;
+  bsm_match_id: number | null;
   home_away: CoachEvent['homeAway'];
   meet_at: Date | null;
   starts_at: Date;
@@ -79,7 +85,8 @@ type EventRow = {
   cancel_reason: string | null;
 };
 
-const EVENT_COLUMNS = `e.id, e.team_id, e.type, e.title, e.home_away, e.meet_at, e.starts_at,
+const EVENT_COLUMNS = `e.id, e.team_id, e.type, e.title, e.opponent, e.series_id, e.bsm_match_id,
+  e.home_away, e.meet_at, e.starts_at,
   e.ends_at, e.respond_by, e.location_name, e.location_url, e.min_players, e.coach_note,
   e.cancelled, e.cancel_reason`;
 
@@ -89,6 +96,9 @@ function toEvent(row: EventRow) {
     teamId: row.team_id,
     type: row.type,
     title: row.title,
+    opponent: row.opponent,
+    seriesId: row.series_id,
+    bsmMatchId: row.bsm_match_id,
     homeAway: row.home_away,
     meetAt: isoOrNull(row.meet_at),
     startsAt: iso(row.starts_at),

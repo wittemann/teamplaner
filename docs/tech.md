@@ -92,7 +92,7 @@ Umsetzung (2026-10-31):
 - Späte Änderung: Push an den Trainer; Mail nur, wenn kein Gerät sie bekommen hat.
 - Absage / zurückgenommene Absage im Trainerbereich: Push an die Familien, die dabei sind. Verlegung:
   ebenso; bei Spielen bekommt jeder Elternteil mit Zusage, den kein Push erreicht hat, die Mail
-  „passt es noch?“. Änderungen über die Admin-API benachrichtigen niemanden.
+  „passt es noch?“. Über die Admin-API nur mit `notify: true`, sonst erfährt es niemand (z. B. beim Wechsel der Trainingszeiten).
 - Erinnerungen „noch offen“ gehen weiterhin nur per Mail (mit Antwort-Knöpfen).
 - `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (Vercel); ohne sie bietet die Seite keine
   Benachrichtigungen an und alles geht per Mail. Schlüssel nie wechseln – sonst müssen sich alle

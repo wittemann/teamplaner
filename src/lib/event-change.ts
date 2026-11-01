@@ -1,11 +1,11 @@
 // Coaches change dates in the coach area (docs/features.md, "Trainer"). When an event moves – other
 // day, time, meeting time or place – the families taking part get a push. For games, families the
 // push didn't reach get a mail with "passt es noch?" buttons (lib/answer-link.ts) instead, so a
-// changed plan doesn't go unnoticed.
+// changed plan doesn't go unnoticed. The Admin API asks for the same news with `notify`.
 import { answerUrl } from './answer-link.ts';
 import type { CoachEvent } from './coach.ts';
 import type { Db } from './db/client.ts';
-import { longDate, time } from './format.ts';
+import { longDate, shortDate, time, weekday } from './format.ts';
 import {
   answerButtons,
   escapeHtml,
@@ -15,7 +15,7 @@ import {
   smallPrint,
 } from './mail-html.ts';
 import type { Mail } from './mail.ts';
-import { pushEventNews, type PushSender } from './push.ts';
+import { pushCancelled, pushCoachNote, pushEventNews, type PushSender } from './push.ts';
 import { needsAnswer } from './season.ts';
 
 type Moved = Pick<CoachEvent, 'type' | 'startsAt' | 'meetAt' | 'locationName' | 'cancelled'>;
@@ -174,7 +174,7 @@ export async function notifyMoved(
     push?: PushSender;
   },
 ) {
-  const { reachedIds, reached } = await pushEventNews(
+  const { reachedIds, reached, missed } = await pushEventNews(
     db,
     event.id,
     { title: `Geändert: ${event.title}`, body: when(event), tag: `event-${event.id}` },
@@ -194,5 +194,45 @@ export async function notifyMoved(
       console.error('moved game: mail failed', (error as { code?: string }).code ?? 'unknown');
     }
   }
-  return { pushed: reached, sent, failed };
+  return { pushed: reached, missed, sent, failed };
+}
+
+/**
+ * Tells the families what changed between two states of an event, as the coach area does: taken
+ * back or cancelled, else moved, plus a new note (not on a cancelled event). `missed` = families
+ * without a device for the push.
+ */
+export async function notifyEventChange(
+  db: Db,
+  before: CoachEvent,
+  after: CoachEvent,
+  deps: {
+    origin: string;
+    key: string | undefined;
+    send: (mail: Mail) => Promise<void>;
+    push?: PushSender;
+  },
+) {
+  const day = `${weekday(after.startsAt)} ${shortDate(after.startsAt)}`;
+  const result = { pushed: 0, missed: 0, mailed: 0, failed: 0 };
+  if (before.cancelled !== after.cancelled) {
+    const { reached, missed } = await pushCancelled(db, after, after.cancelReason, day, deps.push);
+    result.pushed += reached;
+    result.missed = missed;
+  } else if (isRescheduled(before, after)) {
+    const [team] = await db.query<{ name: string }>('SELECT name FROM team WHERE id = $1', [
+      after.teamId,
+    ]);
+    const { pushed, missed, sent, failed } = await notifyMoved(db, after, team.name, deps);
+    result.pushed += pushed;
+    result.missed = missed;
+    result.mailed = sent;
+    result.failed = failed;
+  }
+  if (after.coachNote && after.coachNote !== before.coachNote && !after.cancelled) {
+    const { reached, missed } = await pushCoachNote(db, after, after.coachNote, day, deps.push);
+    result.pushed += reached;
+    result.missed = Math.max(result.missed, missed);
+  }
+  return result;
 }
