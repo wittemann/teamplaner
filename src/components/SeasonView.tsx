@@ -555,7 +555,7 @@ function ThisWeek({
         return (
           <div
             key={e.id}
-            class={`flex min-h-16 items-center gap-3 rounded-md px-3 py-2.5 ${
+            class={`rounded-md px-3 py-2.5 ${
               training
                 ? out
                   ? 'bg-note-bg'
@@ -563,49 +563,52 @@ function ThisWeek({
                 : `border-2 bg-white ${open ? 'border-rust' : 'border-line'}`
             } ${e.cancelled ? 'opacity-60' : ''}`}
           >
-            <div class="flex w-13 shrink-0 flex-col rounded bg-white py-1 text-center leading-tight">
-              <span class="text-[13px] font-semibold text-text-light uppercase">
-                {weekday(e.startsAt)}
-              </span>
-              <span class="font-condensed text-2xl font-bold text-ink">
-                {dayOfMonth(e.startsAt)}
-              </span>
+            <div class="flex min-h-11 items-center gap-3">
+              <div class="flex w-13 shrink-0 flex-col rounded bg-white py-1 text-center leading-tight">
+                <span class="text-[13px] font-semibold text-text-light uppercase">
+                  {weekday(e.startsAt)}
+                </span>
+                <span class="font-condensed text-2xl font-bold text-ink">
+                  {dayOfMonth(e.startsAt)}
+                </span>
+              </div>
+              <div class="flex min-w-0 flex-1 flex-col leading-snug">
+                <strong class="text-[17px] text-ink">{e.title}</strong>
+                <span class="text-sm">
+                  {e.meetAt ? `Treffpunkt ${time(e.meetAt)}` : time(e.startsAt)}
+                  {e.endsAt && !e.meetAt && `–${time(e.endsAt)}`}
+                  {e.locationName && ` · ${e.locationName}`}
+                </span>
+                <span
+                  class={`text-sm font-semibold ${
+                    e.cancelled ? 'text-text-light' : out || open ? 'text-rust' : 'text-jersey'
+                  }`}
+                >
+                  {e.cancelled
+                    ? `Fällt aus${e.cancelReason ? ` · ${e.cancelReason}` : ''}`
+                    : open
+                      ? 'Noch offen'
+                      : out
+                        ? training
+                          ? 'Abgemeldet'
+                          : 'Nicht dabei'
+                        : 'Dabei ✓'}
+                </span>
+              </div>
+              {!e.cancelled &&
+                (training ? (
+                  <AnswerButton
+                    positive={out}
+                    onClick={() => onAnswer(e.id, out ? 'in' : 'out')}
+                    label={out ? 'Doch dabei' : 'Abmelden'}
+                  />
+                ) : (
+                  e.status !== 'in' && (
+                    <AnswerButton positive onClick={() => onAnswer(e.id, 'in')} label="Dabei" />
+                  )
+                ))}
             </div>
-            <div class="flex min-w-0 flex-1 flex-col leading-snug">
-              <strong class="text-[17px] text-ink">{e.title}</strong>
-              <span class="text-sm">
-                {e.meetAt ? `Treffpunkt ${time(e.meetAt)}` : time(e.startsAt)}
-                {e.endsAt && !e.meetAt && `–${time(e.endsAt)}`}
-                {e.locationName && ` · ${e.locationName}`}
-              </span>
-              <span
-                class={`text-sm font-semibold ${
-                  e.cancelled ? 'text-text-light' : out || open ? 'text-rust' : 'text-jersey'
-                }`}
-              >
-                {e.cancelled
-                  ? `Fällt aus${e.cancelReason ? ` · ${e.cancelReason}` : ''}`
-                  : open
-                    ? 'Noch offen'
-                    : out
-                      ? training
-                        ? 'Abgemeldet'
-                        : 'Nicht dabei'
-                      : 'Dabei ✓'}
-              </span>
-            </div>
-            {!e.cancelled &&
-              (training ? (
-                <AnswerButton
-                  positive={out}
-                  onClick={() => onAnswer(e.id, out ? 'in' : 'out')}
-                  label={out ? 'Doch dabei' : 'Abmelden'}
-                />
-              ) : (
-                e.status !== 'in' && (
-                  <AnswerButton positive onClick={() => onAnswer(e.id, 'in')} label="Dabei" />
-                )
-              ))}
+            {e.coachNote && !e.cancelled && <CoachNote note={e.coachNote} />}
           </div>
         );
       })}
