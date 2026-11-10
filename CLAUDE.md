@@ -10,4 +10,4 @@ Phase: Umsetzung. Astro-App im Repo-Root, Eltern-Saisonansicht steht (lokal, PGl
 - Stack-Vorbild: `~/workspace/rezepte` (Astro mit Server-Rendering auf Vercel). Optik: `~/workspace/bretten-kangaroos.net` (`docs/design.md`).
 - Mockup = Claude-Design-Canvas https://claude.ai/artifact/XgvhWom64h8uwr7DSxjNDY, Quelle in `mockup/canvas/project/`.
   Änderungen: Datei hier bearbeiten, dann mit dem Artifact-Tool an dieselbe URL veröffentlichen (`root` = `mockup/canvas`).
-  Vorher die Canvas-Datei lesen, falls jemand im Canvas selbst etwas geändert hat. Wappen-Asset: `/_blob/c67d46d18b2e95f921285e53693ca32c`.
+  Vorher die Canvas-Datei lesen, falls jemand im Canvas selbst etwas geändert hat. Wappen-Asset: `/_blob/599ac6bdfb647e1da09f106751ec0de4`.
